@@ -26,4 +26,13 @@ public interface DemoService {
         return CompletableFuture.completedFuture(sayHello(name));
     }
 
+    // 节省服务端的线程资源
+    String asyncContextSayHello(String name);
+
+    // 节省服务端的线程资源
+    CompletableFuture<String> queryUserName(String name);
+
+
+    User queryUserInfo(User user);
+
 }

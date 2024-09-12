@@ -24,20 +24,40 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.DemoService;
 
+import java.io.File;
+
 public class Application {
 
-    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
+    //    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
+
+//    private static final String REGISTRY_URL = "zookeeper://172.30.10.72:2181";
+
+    private static final String REGISTRY_URL = "nacos://172.30.10.72:8848";
 
     public static void main(String[] args) {
         startWithBootstrap();
     }
 
     private static void startWithBootstrap() {
+        // 消费者和生产者是不一样的, 记得改下
+        String appName = "providerDemo";
+        String filePath = System.getProperty("user.home") + File.separator + ".dubbo" + File.separator + appName;
+        // 修改dubbo的本地缓存路径，避免缓存冲突 cd ~/.dubbo
+        System.setProperty("dubbo.meta.cache.filePath", filePath);
+        System.setProperty("dubbo.mapping.cache.filePath", filePath);
+
+        // 服务配置
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
+        // 开启异步化支持
+//        service.setAsync(Boolean.TRUE);
+        // 设置超时
+        service.setTimeout(5000);
 
+        // 往下看
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+
         bootstrap.application(new ApplicationConfig("dubbo-demo-api-provider"))
             .registry(new RegistryConfig(REGISTRY_URL))
             .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))

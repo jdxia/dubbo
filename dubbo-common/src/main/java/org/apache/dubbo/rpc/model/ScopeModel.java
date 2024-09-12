@@ -54,12 +54,12 @@ public abstract class ScopeModel implements ExtensionAccessor {
      *     FrameworkModel (index=1) -> ApplicationModel (index=2) -> ModuleModel (index=1, first user module)
      * </ol>
      */
-    private String internalId;
+    private String internalId; // 模型id 代表模型树的层次结构
 
     /**
      * Public Model Name, can be set from user
      */
-    private String modelName;
+    private String modelName;  // 模块名称
 
     private String desc;
 
@@ -83,7 +83,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     protected ScopeModel(ScopeModel parent, ExtensionScope scope, boolean isInternal) {
         this.parent = parent;
-        this.scope = scope;
+        this.scope = scope;  // 什么模型, 是框架模型还是什么
         this.internalScope = isInternal;
     }
 
@@ -98,7 +98,9 @@ public abstract class ScopeModel implements ExtensionAccessor {
      */
     protected void initialize() {
         synchronized (instLock) {
+            // 扩展点的访问器, 第一个参数是null
             this.extensionDirector = new ExtensionDirector(parent != null ? parent.getExtensionDirector() : null, scope, this);
+            // 添加一个扩展点的后处理器
             this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
             this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
 

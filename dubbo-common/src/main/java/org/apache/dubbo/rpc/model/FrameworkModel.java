@@ -76,15 +76,22 @@ public class FrameworkModel extends ScopeModel {
      * Use {@link FrameworkModel#newModel()} to create a new model
      */
     public FrameworkModel() {
+        /**
+         * parent: 没有父类, 框架模型是最顶层的
+         * ExtensionScope 枚举, 模型的范围
+         */
         super(null, ExtensionScope.FRAMEWORK, false);
         synchronized (globalLock) {
             synchronized (instLock) {
+                // 框架模型的 setInternalId 是 1
                 this.setInternalId(String.valueOf(index.getAndIncrement()));
                 // register FrameworkModel instance early
                 allInstances.add(this);
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info(getDesc() + " is created");
                 }
+
+                // 往下
                 initialize();
 
                 TypeDefinitionBuilder.initBuilders(this);
@@ -174,10 +181,12 @@ public class FrameworkModel extends ScopeModel {
      */
     public static FrameworkModel defaultModel() {
         FrameworkModel instance = defaultInstance;
+        // 框架模型默认一个就可以, 没有就创建并且加锁
         if (instance == null) {
             synchronized (globalLock) {
                 resetDefaultFrameworkModel();
                 if (defaultInstance == null) {
+                    // 往下看
                     defaultInstance = new FrameworkModel();
                 }
                 instance = defaultInstance;

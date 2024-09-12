@@ -71,6 +71,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 public @interface DubboReference {
+    // ReferenceAnnotationBeanPostProcessor 处理的
 
     /**
      * Interface class, default value is void.class

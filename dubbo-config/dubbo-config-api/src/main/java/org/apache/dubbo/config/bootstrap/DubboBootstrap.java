@@ -110,6 +110,7 @@ public final class DubboBootstrap {
         if (instance == null) {
             synchronized (DubboBootstrap.class) {
                 if (instance == null) {
+                    // 这边涉及到dubbo的3层模型
                     instance = DubboBootstrap.getInstance(ApplicationModel.defaultModel());
                 }
             }

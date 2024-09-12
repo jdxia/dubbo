@@ -146,8 +146,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 beanType = beanFactory.getType(beanName);
             }
             if (beanType != null) {
+                // 往下
                 AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanName, beanType, null);
                 try {
+                    // 往下
                     prepareInjection(metadata);
                 } catch (BeansException e) {
                     throw e;
@@ -354,6 +356,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 }
                 Class<?> injectedType = fieldElement.field.getType();
                 AnnotationAttributes attributes = fieldElement.attributes;
+                // 注册
                 String referenceBeanName = registerReferenceBean(fieldElement.getPropertyName(), injectedType, attributes, fieldElement.field);
 
                 //associate fieldElement and reference bean
@@ -368,6 +371,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 }
                 Class<?> injectedType = methodElement.getInjectedType();
                 AnnotationAttributes attributes = methodElement.attributes;
+                // 注册
                 String referenceBeanName = registerReferenceBean(methodElement.getPropertyName(), injectedType, attributes, methodElement.method);
 
                 //associate methodElement and reference bean

@@ -17,20 +17,50 @@
 spring:
   application:
     name: dubbo-springboot-demo-provider
+  main:
+    banner-mode: off
+  web:
+    resources:
+      add-mappings: false
+  messages:
+    encoding: UTF-8
+
+zk:
+  address: zookeeper://172.30.10.72:2181
 
 dubbo:
+  shutdown:
+    hook: true
   application:
     name: ${spring.application.name}
+    #provider注册模式，可选值 interface(接口级)、instance(应用级)、all，默认是all(双注册)
+    register-mode: instance
+    metadata-service-port: -1
+    #consumer服务发现模式
+    service-discovery:
+      # FORCE_INTERFACE，只消费接口级地址，如无地址则报错，单订阅 2.x 地址
+      # APPLICATION_FIRST，智能决策接口级/应用级地址，双订阅
+      # FORCE_APPLICATION，只消费应用级地址，如无地址则报错，单订阅 3.x 地址
+      migration: FORCE_APPLICATION
+    dump:
+      enable: false
+      directory: /tmp
   protocol:
     name: dubbo
     port: -1
+    # sent和序列号在io线程上操作
+    dispatcher: all
   registry:
     id: zk-registry
-    address: zookeeper://127.0.0.1:2181
+    check: true
+    address: ${zk.address}
   config-center:
-    address: zookeeper://127.0.0.1:2181
+    address: ${zk.address}
   metadata-report:
-    address: zookeeper://127.0.0.1:2181
+    address: ${zk.address}
+  consumer:
+    timeout: 5000 # 配置客户端超时, 默认1s
+    check: false
   metrics:
     protocol: prometheus
     enable-jvm: true
@@ -45,3 +75,10 @@ logging:
   pattern:
     level: '%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]'
 
+server:
+  address: 0.0.0.0
+  port: 8284
+  shutdown: graceful
+  servlet:
+    encoding:
+      charset: UTF-8

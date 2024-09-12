@@ -199,6 +199,7 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
     }
 
     private AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata buildAnnotatedMetadata(final Class<?> beanClass) {
+        //寻找那些字段和方法有 @DubboReference 注解
         Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements = findFieldAnnotationMetadata(beanClass);
         Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements = findAnnotatedMethodMetadata(beanClass);
         return new AnnotatedInjectionMetadata(beanClass, fieldElements, methodElements);
@@ -218,6 +219,7 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
                         metadata.clear(pvs);
                     }
                     try {
+                        // 往下
                         metadata = buildAnnotatedMetadata(clazz);
                         this.injectionMetadataCache.put(cacheKey, metadata);
                     } catch (NoClassDefFoundError err) {

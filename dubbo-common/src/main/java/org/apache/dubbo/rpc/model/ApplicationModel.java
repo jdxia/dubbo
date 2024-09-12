@@ -89,7 +89,9 @@ public class ApplicationModel extends ScopeModel {
      */
     public static ApplicationModel defaultModel() {
         // should get from default FrameworkModel, avoid out of sync
-        return FrameworkModel.defaultModel().defaultApplication();
+        // 创建默认的框架模型和默认的应用模型
+        return FrameworkModel.defaultModel() // 框架模型
+            .defaultApplication();  // 应用模型
     }
 
     // ------------- instance methods ---------------//

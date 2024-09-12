@@ -32,9 +32,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>The way to find and create an extension instance is similar to Java classloader.</p>
  */
 public class ExtensionDirector implements ExtensionAccessor {
+    // 扩展加载器的管理器
 
     private final ConcurrentMap<Class<?>, ExtensionLoader<?>> extensionLoadersMap = new ConcurrentHashMap<>(64);
     private final ConcurrentMap<Class<?>, ExtensionScope> extensionScopeMap = new ConcurrentHashMap<>(64);
+
+    // 父级
     private final ExtensionDirector parent;
     private final ExtensionScope scope;
     private final List<ExtensionPostProcessor> extensionPostProcessors = new ArrayList<>();
@@ -49,6 +52,7 @@ public class ExtensionDirector implements ExtensionAccessor {
 
     public void addExtensionPostProcessor(ExtensionPostProcessor processor) {
         if (!this.extensionPostProcessors.contains(processor)) {
+            // 放到集合里面
             this.extensionPostProcessors.add(processor);
         }
     }
