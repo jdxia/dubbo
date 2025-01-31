@@ -110,7 +110,24 @@ public final class DubboBootstrap {
         if (instance == null) {
             synchronized (DubboBootstrap.class) {
                 if (instance == null) {
-                    // 这边涉及到dubbo的3层模型
+                    /**
+                     * 这边涉及到dubbo的3层模型
+                     * https://cn.dubbo.apache.org/zh-cn/blog/1/01/01/dubbo-3-%E4%B8%AD%E7%9A%84%E4%B8%89%E5%B1%82%E9%85%8D%E7%BD%AE%E9%9A%94%E7%A6%BB/
+                     * JVM级别、应用级别、服务(模块)级别, 从而实现各个级别上的生命周期及配置信息的单独管理。
+                     * 这三个层次上的隔离由 FrameworkModel、ApplicationModel 和 ModuleModel 及它们对应的 Config 来完成
+                     *
+                     * FrameworkModel ：Dubbo 框架的顶级模型，表示 Dubbo 框架的全局运行环境，适配多应用混合部署的场景，降低资源成本
+                     * FrameworkModel负责管理整个Dubbo框架的各种全局配置、元数据以及默认配置。
+                     * 如：假设我们有一个在线教育平台，平台下有多个租户，而我们希望使这些租户的服务部署在同一个 JVM 上以节省资源，但它们之间可能使用不同的注册中心、监控设施、协议等，因此我们可以为每个租户分配一个 FrameWorkModel 实例来实现这种隔离。
+                     *
+                     * ApplicationModel ：应用程序级别模型，表示一个 Dubbo 应用（通常为一个 SpringApplication）。适配单JVM多应用场景，通常结合热发布使用，降低热发布对整个应用的影响范围。
+                     * 如，以上的在线教育平台有多个子系统，如课程管理、学生管理，而每个子系统都是独立的 Spring 应用，在同个 JVM 中运行，共享一个 FrameworkModel，也会共享 Framework 级别的默认配置和资源
+                     *
+                     * ModuleModel ：模块级别模型，表示应用下的子模块。适配一个应用下的多个模块（容器）
+                     * 如，上述的课程管理子系统内，新增课程和发布课程两个业务模块可能使用不同的spring容器。我们可以为每个 spring 容器提供一个ModuleModel实例来管理、隔离模块级别的配置和资源
+                     *
+                     * 从 ApplicationModel.defaultModel() 看
+                     */
                     instance = DubboBootstrap.getInstance(ApplicationModel.defaultModel());
                 }
             }

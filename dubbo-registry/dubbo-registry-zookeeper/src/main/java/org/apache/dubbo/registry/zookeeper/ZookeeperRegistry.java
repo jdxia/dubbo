@@ -79,11 +79,14 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
             throw new IllegalStateException("registry address == null");
         }
 
+        // dubbo节点
         String group = url.getGroup(DEFAULT_ROOT);
+        // 在前面拼 /
         if (!group.startsWith(PATH_SEPARATOR)) {
             group = PATH_SEPARATOR + group;
         }
 
+        // /dubbo就是root节点
         this.root = group;
         this.zkClient = zookeeperTransporter.connect(url);
 
@@ -154,10 +157,17 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
         }
     }
 
+    /**
+     * url
+     *     dubbo://192.168.243.2:20880/org.apache.dubbo.demo.UserService?application=dubbo-demo-api-provider&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.UserService&methods=queryUserInfo&prefer.serialization=fastjson2,hessian2&service-name-mapping=true&side=provider&timeout=5000&timestamp=1732414232650
+     */
     @Override
     public void doRegister(URL url) {
         try {
             checkDestroyed();
+            /**
+             * toUrlPath: /dubbo/org.apache.dubbo.demo.UserService/providers/dubbo%3A%2F%2F192.168.243.2%3A20880%2Forg.apache.dubbo.demo.UserService%3Fapplication%3Ddubbo-demo-api-provider%26deprecated%3Dfalse%26dubbo%3D2.0.2%26dynamic%3Dtrue%26generic%3Dfalse%26interface%3Dorg.apache.dubbo.demo.UserService%26methods%3DqueryUserInfo%26prefer.serialization%3Dfastjson2%2Chessian2%26service-name-mapping%3Dtrue%26side
+             */
             zkClient.create(toUrlPath(url), url.getParameter(DYNAMIC_KEY, true), false);
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);

@@ -98,6 +98,10 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void doRegister(ServiceInstance serviceInstance) {
         try {
+            /**
+             * build出来的是, /services 下面的节点
+             * {name='dubbo-springboot-demo-provider', id='192.168.243.2:20880', address='192.168.243.2', port=20880, sslPort=null, payload=ZookeeperInstance{id='192.168.243.2:20880', name='dubbo-springboot-demo-provider', metadata={dubbo.endpoints=[{"port":20880,"protocol":"dubbo"}], dubbo.metadata-service.url-params={"prefer.serialization":"fastjson2,hessian2","version":"1.0.0","dubbo":"2.0.2","side":"provider","port":"20880","protocol":"dubbo"}, dubbo.metadata.revision=05301b4ea1ac73c197f221cd25a4fa46, dubbo.metadata.storage-type=local, timestamp=1728813457188}}, registrationTimeUTC=1728813478237, serviceType=DYNAMIC, uriSpec=null, enabled=true}
+             */
             serviceDiscovery.registerService(build(serviceInstance));
         } catch (Exception e) {
             throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + serviceInstance.toString(), e);

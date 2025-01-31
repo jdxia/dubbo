@@ -28,51 +28,67 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Application {
 
 //    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
 
-//    private static final String REGISTRY_URL = "zookeeper://172.30.10.72:2181";
+    private static final String REGISTRY_URL = "zookeeper://192.168.33.20:2181";
 
-    private static final String REGISTRY_URL = "nacos://172.30.10.72:8848";
+//    private static final String REGISTRY_URL = "nacos://192.168.33.20:8848";
 
 
 
     public static void main(String[] args) {
-            runWithBootstrap();
+        cleanProxy();
+
+        runWithBootstrap();
     }
 
     private static void runWithBootstrap() {
         // 消费者和生产者是不一样的, 记得改下
         String appName = "consumerDemo";
+
         String filePath = System.getProperty("user.home") + File.separator + ".dubbo" + File.separator + appName;
         // 修改dubbo的本地缓存路径，避免缓存冲突 cd ~/.dubbo
         System.setProperty("dubbo.meta.cache.filePath", filePath);
         System.setProperty("dubbo.mapping.cache.filePath", filePath);
 
-        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
-        reference.setInterface(DemoService.class);
-        reference.setGeneric("true");
+        List<ReferenceConfig> referenceConfigList = new ArrayList<>();
+
+        // 一个应用内可以有 0 到多个 demoServiceReferenceConfig
+        // 一个provider服务实例的一个引用, ReferenceConfig 代表调用其他服务实例的引用配置
+        ReferenceConfig<DemoService> demoServiceReferenceConfig = new ReferenceConfig<>();
+        demoServiceReferenceConfig.setInterface(DemoService.class);
+        demoServiceReferenceConfig.setGeneric("true");
         // 开启异步化
-//        reference.setAsync(Boolean.TRUE);
+//        demoServiceReferenceConfig.setAsync(Boolean.TRUE);
         // 关闭依赖检查
-        reference.setCheck(Boolean.FALSE);
+        demoServiceReferenceConfig.setCheck(Boolean.FALSE);
         // 请求重试次数
-        reference.setRetries(2);
+        demoServiceReferenceConfig.setRetries(2);
         // 失败自动切换
-        reference.setCluster("failover");
+        demoServiceReferenceConfig.setCluster("failover");
         //设置超时时间
-        reference.setTimeout(5000);
+        demoServiceReferenceConfig.setTimeout(5000);
+
+
+        referenceConfigList.add(demoServiceReferenceConfig);
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-api-consumer"))
             .registry(new RegistryConfig(REGISTRY_URL))
             .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
-            .reference(reference)
+            .references(referenceConfigList)
             .start();
 
-        DemoService demoService = bootstrap.getCache().get(reference);
+
+        // 直接通过 ReferenceConfig 拿到一个 DemoService 接口类型, 底层是用了动态代理
+//        DemoService demoService1 = demoServiceReferenceConfig.get();
+        
+        DemoService demoService = bootstrap.getCache().get(demoServiceReferenceConfig);
         String message = demoService.sayHello("dubbo");
         System.out.println("=========> provider: " + message);
 
@@ -81,6 +97,20 @@ public class Application {
         Object genericInvokeResult = genericService.$invoke("sayHello", new String[]{String.class.getName()},
             new Object[]{"dubbo generic invoke"});
         System.out.println(genericInvokeResult.toString());
+    }
+
+    private static void cleanProxy() {
+        System.clearProperty("socksProxyHost");
+        System.clearProperty("socksProxyPort");
+
+        System.clearProperty("http.proxyHost");
+        System.clearProperty("http.proxyPort");
+
+        System.clearProperty("https.proxyHost");
+        System.clearProperty("https.proxyPort");
+
+        System.clearProperty("frp.proxyHost");
+        System.clearProperty("frp.proxyPort");
     }
 
 }

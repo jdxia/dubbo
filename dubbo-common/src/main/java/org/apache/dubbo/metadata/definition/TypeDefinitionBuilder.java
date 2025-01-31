@@ -40,6 +40,8 @@ public class TypeDefinitionBuilder {
     public static List<TypeBuilder> BUILDERS;
 
     public static void initBuilders(FrameworkModel model) {
+        // 用框架模型获取ExtensionLoader, 再去获取加载器的实例
+        // 涉及到dubbo spi
         Set<TypeBuilder> tbs = model.getExtensionLoader(TypeBuilder.class).getSupportedExtensionInstances();
         BUILDERS = new ArrayList<>(tbs);
     }

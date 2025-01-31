@@ -18,6 +18,8 @@ package org.apache.dubbo.common.extension;
 
 /**
  * A Post-processor called before or after extension initialization.
+ *
+ * 在扩展初始化之前或之后调用的后处理器。
  */
 public interface ExtensionPostProcessor {
 

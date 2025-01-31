@@ -16,7 +16,12 @@
  */
 package po;
 
-public class TestPO {
+import java.io.Serializable;
+
+public class TestPO implements Serializable {
+
+    private static final long serialVersionUID = 8911214L;
+
     private String name;
     private String address;
     private int age;

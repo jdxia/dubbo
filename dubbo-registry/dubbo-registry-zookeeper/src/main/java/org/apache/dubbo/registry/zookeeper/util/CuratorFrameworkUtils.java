@@ -151,6 +151,7 @@ public abstract class CuratorFrameworkUtils {
     }
 
     public static String getRootPath(URL registryURL) {
+        // ROOT_PATH 默认是 /services
         String group = ROOT_PATH.getParameterValue(registryURL);
         if (group.equalsIgnoreCase(DEFAULT_GROUP)) {
             group = GROUP_PATH.getParameterValue(registryURL);

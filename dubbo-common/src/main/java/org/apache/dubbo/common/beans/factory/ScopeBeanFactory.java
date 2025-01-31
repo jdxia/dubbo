@@ -50,7 +50,10 @@ public class ScopeBeanFactory {
     private final ExtensionAccessor extensionAccessor;
     private final List<ExtensionPostProcessor> extensionPostProcessors;
     private final ConcurrentHashMap<Class<?>, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
+
+    // 已经注册的bean信息
     private final List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
+
     private InstantiationStrategy instantiationStrategy;
     private final AtomicBoolean destroyed = new AtomicBoolean();
     private List<Class<?>> registeredClasses = new ArrayList<>();
@@ -58,13 +61,18 @@ public class ScopeBeanFactory {
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
         this.extensionAccessor = extensionAccessor;
+        // 取出 扩展点加载器的管理器 的后置处理器
         extensionPostProcessors = extensionAccessor.getExtensionDirector().getExtensionPostProcessors();
+
+        // 初始化策略
         initInstantiationStrategy();
     }
 
     private void initInstantiationStrategy() {
+        // 遍历 扩展点加载器的后置处理器
         for (ExtensionPostProcessor extensionPostProcessor : extensionPostProcessors) {
             if (extensionPostProcessor instanceof ScopeModelAccessor) {
+                // 创建一个初始化的策略, 放进去
                 instantiationStrategy = new InstantiationStrategy((ScopeModelAccessor) extensionPostProcessor);
                 break;
             }

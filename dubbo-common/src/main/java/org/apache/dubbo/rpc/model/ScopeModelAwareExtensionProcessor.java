@@ -24,8 +24,10 @@ public class ScopeModelAwareExtensionProcessor implements ExtensionPostProcessor
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;
 
+    // 域模型后置扩展点处理器
     public ScopeModelAwareExtensionProcessor(ScopeModel scopeModel) {
         this.scopeModel = scopeModel;
+        // 判断上面的模型属于那个, 进行强转
         initialize();
     }
 

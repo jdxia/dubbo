@@ -31,6 +31,18 @@ import java.util.concurrent.CountDownLatch;
 public class ProviderApplication {
     public static void main(String[] args) throws Exception {
 
+        System.clearProperty("socksProxyHost");
+        System.clearProperty("socksProxyPort");
+
+        System.clearProperty("http.proxyHost");
+        System.clearProperty("http.proxyPort");
+
+        System.clearProperty("https.proxyHost");
+        System.clearProperty("https.proxyPort");
+
+        System.clearProperty("frp.proxyHost");
+        System.clearProperty("frp.proxyPort");
+
         SpringApplication application = new SpringApplication(ProviderApplication.class);
 
         // 添加自定义的ApplicationContextInitializer

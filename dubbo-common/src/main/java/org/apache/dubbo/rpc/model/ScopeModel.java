@@ -38,7 +38,44 @@ import java.util.concurrent.locks.Lock;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
 
+/*
+                      +----------------------+
+                      |   Abstract ScopeModel |
+                      |----------------------|
+                      | <<interface>>         |
+                      | ExtensionAccessor     |
+                      +----------------------+
+                                ▲
+    ┌─────────────────────────┼─────────────────────────┐
+    │                           │                           │
++--------------------+  +--------------------+  +--------------------+
+|  ApplicationModel  |  |  FrameworkModel    |  |  ModuleModel        |
++--------------------+  +--------------------+  +--------------------+
+
+关系说明：
+1. Abstract ScopeModel 是一个抽象类，所有子模型类都继承它。
+2. ApplicationModel、FrameworkModel 和 ModuleModel 是具体的子类，分别继承自 Abstract ScopeModel。
+3. ExtensionAccessor 是一个接口，由 Abstract ScopeModel 实现。
+4. 子类 (ApplicationModel、FrameworkModel、ModuleModel) 通过继承 ScopeModel，也间接实现了 ExtensionAccessor 的接口功能。
+
+总结：
+- Abstract ScopeModel 负责定义模型的基础结构，并提供一个接口扩展的能力。
+- 每个子类代表不同的业务范围 (应用、框架和模块) 的模型。
+*/
+// 模型对象的公共抽象父类型
 public abstract class ScopeModel implements ExtensionAccessor {
+    /**
+     * 内部id用于表示模型树的层次结构
+     * 公共模型名称，可以被用户设置
+     * 描述信息
+     * 类加载器管理
+     * 父模型管理parent
+     * 当前模型的所属域ExtensionScope有:FRAMEWORK(框架)，APPLICATION(应用)，MODULE(模块)，SELF(自给自足，为每个作用域创建一个实例，用于特殊的SPI扩展，如ExtensionInjector)
+     * 具体的扩展加载程序管理器对象的管理:ExtensionDirector
+     * 域Bean工厂管理，一个内部共享的Bean工厂 ScopeBeanFactory
+     */
+
+
     protected static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ScopeModel.class);
 
     /**
@@ -54,27 +91,39 @@ public abstract class ScopeModel implements ExtensionAccessor {
      *     FrameworkModel (index=1) -> ApplicationModel (index=2) -> ModuleModel (index=1, first user module)
      * </ol>
      */
-    private String internalId; // 模型id 代表模型树的层次结构
+    // 模型id 代表模型树的层次结构, 框架模型的id就是1
+    private String internalId;
 
     /**
      * Public Model Name, can be set from user
+     * 公共模型名称，可以被用户设置
      */
-    private String modelName;  // 模块名称
+    private String modelName;
 
+    // 描述信息
     private String desc;
 
+    // 当前域下的类加载器
     private final Set<ClassLoader> classLoaders = new ConcurrentHashSet<>();
 
+    // 父模型管理parent
     private final ScopeModel parent;
+
+    // 当前模型的所属域ExtensionScope有:FRAMEWORK(框架)，APPLICATION(应用)，MODULE(模块)，SELF(自给自足，为每个作用域创建一个实例，用于特殊的SPI扩展，如ExtensionInjector)
     private final ExtensionScope scope;
 
+    // 具体扩展加载程序管理器对象的管理
     private volatile ExtensionDirector extensionDirector;
 
+    // 域Bean工厂管理，一个内部共享的Bean工厂
     private volatile ScopeBeanFactory beanFactory;
+
+    //使用数据结构链表，创建销毁监听器容器，一般用于关闭进程，重置应用程序对象等操作时候调用
     private final List<ScopeModelDestroyListener> destroyListeners = new CopyOnWriteArrayList<>();
 
     private final List<ScopeClassLoaderListener> classLoaderListeners = new CopyOnWriteArrayList<>();
 
+    // 属性集合
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
     private final boolean internalScope;
@@ -98,13 +147,22 @@ public abstract class ScopeModel implements ExtensionAccessor {
      */
     protected void initialize() {
         synchronized (instLock) {
-            // 扩展点的访问器, 第一个参数是null
+            /**
+             * 扩展点加载器的管理器, 第一个参数是null, 第二个参数是什么模型框架模型还是什么, 第三个参数是当前模型
+             * ExtensionDirector 支持多个级别, 子级可以继承父级的扩展实例
+             * 查找和创建扩展方式类似java classloader
+             */
             this.extensionDirector = new ExtensionDirector(parent != null ? parent.getExtensionDirector() : null, scope, this);
-            // 添加一个扩展点的后处理器
+            // 给 扩展点加载器的管理器 添加一个扩展点的初始化后置处理器, 在扩展初始化之前或之后调用的后处理器，参数类型为ExtensionPostProcessor
             this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
+            /**
+             * beanFactory: ScopeBeanFactory
+             * 创建一个内部共享的域工厂对象, 用于注册bean, 创建bean, 获取bean, 初始化bean等
+             */
             this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
 
             // Add Framework's ClassLoader by default
+            //将当前类的加载器存入加载器集合classLoaders中
             ClassLoader dubboClassLoader = ScopeModel.class.getClassLoader();
             if (dubboClassLoader != null) {
                 this.addClassLoader(dubboClassLoader);
@@ -220,6 +278,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
                 parent.addClassLoader(classLoader);
             }
             extensionDirector.removeAllCachedLoader();
+            // 通知, 会发布事件监听
             notifyClassLoaderAdd(classLoader);
         }
     }

@@ -76,6 +76,10 @@ import static org.apache.dubbo.config.Constants.PARAMETERS;
  * @export
  */
 public abstract class AbstractConfig implements Serializable {
+    /**
+     * 抽象的配置类型，也是最顶层的服务配置类型，
+     * 封装着解析配置的实用方法和 公共方法，比如服务 id 的设置，服务标签名字的处理，服务参数的添加，属性 的提取等等。
+     */
 
     protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConfig.class);
     private static final long serialVersionUID = 4267533505537413570L;
@@ -414,11 +418,20 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public final void setScopeModel(ScopeModel scopeModel) {
+        // 第一次初始化的当前成员变量是空的可以设置变量
         if (scopeModel != null && this.scopeModel != scopeModel) {
+            // 检查参数是否合法
             checkScopeModel(scopeModel);
+            // 初始化对象
             ScopeModel oldScopeModel = this.scopeModel;
             this.scopeModel = scopeModel;
             // reinitialize spi extension and change referenced config's scope model
+            /**
+             * 被子类重写的方法, 根据多态会调用具体子类型的这个方法,子类应该重写此方法以初始化其spi扩展并更改引用的配置的范围模型
+             *
+             * 当ScopeModel 模型对象发生了改变，上面调用了 postProcessAfterScopeModelChanged 方法来通知模型对象改变的时候要执行的操作，
+             * 根据多态重写的逻辑我们从实现类的 postProcessAfterScopeModelChanged 来看，在下面的调用链路中部分父类型并未实现 postProcessAfterScopeModelChanged 方法我们就直接忽略了
+             */
             this.postProcessAfterScopeModelChanged(oldScopeModel, this.scopeModel);
         }
     }
@@ -427,6 +440,7 @@ public abstract class AbstractConfig implements Serializable {
         if (scopeModel == null) {
             throw new IllegalArgumentException("scopeModel cannot be null");
         }
+        // 必须是 ApplicationModel类型或者子类
         if (!(scopeModel instanceof ApplicationModel)) {
             throw new IllegalArgumentException("Invalid scope model, expect to be a ApplicationModel but got: " + scopeModel);
         }
@@ -452,6 +466,13 @@ public abstract class AbstractConfig implements Serializable {
      * @param newScopeModel
      */
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        /**
+         * 子类可以看
+         * 1. ServiceConfig
+         * 2. ServiceConfigBase
+         * 3. AbstractInterfaceConfig
+         */
+
         // remove this config from old ConfigManager
 //        if (oldScopeModel != null && oldScopeModel instanceof ApplicationModel) {
 //           ((ApplicationModel)oldScopeModel).getApplicationConfigManager().removeConfig(this);

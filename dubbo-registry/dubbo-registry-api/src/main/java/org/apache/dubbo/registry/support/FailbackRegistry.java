@@ -203,6 +203,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         removeFailedRegistered(url);
         removeFailedUnregistered(url);
         try {
+            /**
+             * 这里会有zk的 {@link org.apache.dubbo.registry.zookeeper.ZookeeperRegistry#doRegister(org.apache.dubbo.common.URL)}
+             */
             // Sending a registration request to the server side
             doRegister(url);
         } catch (Exception e) {

@@ -46,6 +46,13 @@ import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 
+/**
+ * Dubbo AOP 机制采用 wrapper 设计模式实现，要成为一个 AOP wrapper 类，必须同时满足以下几个条件：
+ *
+ * 1. wrapper 类必须实现 SPI 接口，如以下示例中的 class QosProtocolWrapper implements Protocol
+ * 2. 构造器 constructor 必须包含一个相同的 SPI 参数，如以下示例中 QosProtocolWrapper(Protocol protocol)
+ * 3. wrapper 类必须和普通的 SPI 实现一样写入配置文件，如以下示例 resources/META-INF/dubbo/internal/org.apache.dubbo.rpc.Protocol
+ */
 @Activate(order = 200)
 public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 

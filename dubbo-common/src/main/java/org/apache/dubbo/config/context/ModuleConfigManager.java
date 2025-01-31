@@ -64,7 +64,10 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
 
 
     public ModuleConfigManager(ModuleModel moduleModel) {
+        //向抽象的配置管理器AbstractConfigManager传递参数
+        //模块模型参数，模块支持的配置类型集合
         super(moduleModel, Arrays.asList(ModuleConfig.class, ServiceConfigBase.class, ReferenceConfigBase.class, ProviderConfig.class, ConsumerConfig.class));
+        //获取应用程序配置管理器
         applicationConfigManager = moduleModel.getApplicationModel().getApplicationConfigManager();
     }
 

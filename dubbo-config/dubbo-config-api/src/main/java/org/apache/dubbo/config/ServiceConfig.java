@@ -113,6 +113,12 @@ import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.support.ProtocolUtils.isGeneric;
 
 public class ServiceConfig<T> extends ServiceConfigBase<T> {
+    /**
+     * 服务配置实现类
+     * 这个类 型是我们出现的第一个服务配置实现类型，服务配置实现类已经从父类型中继承了这么多的属性，
+     * 这里主要为实现服务提供了一些配置如服务的协议配置，
+     * 服务的代理工厂 JavassistProxyFactory 是将生成导出服务代理的 ProxyFactory实现，是其默认实现，服务提供者模型，是否导出服务，导出的服务列表，服务 监听器等等。
+     */
 
     private static final long serialVersionUID = 7868244018230856253L;
 
@@ -143,16 +149,27 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private transient volatile boolean unexported;
 
+    // 是否已经初始化
     private transient volatile AtomicBoolean initialized = new AtomicBoolean(false);
 
     /**
      * The exported services
+     * 暴露的服务有哪些
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
     private final List<ServiceListener> serviceListeners = new ArrayList<>();
 
+
     public ServiceConfig() {
+        /**
+         * 在每个构造器的第一行都会有个 super 方法来调用 父类的构造器，
+         * 当前这个 super 方法我们可以不写但是 Java 编译器底层还是会为 我们默认加上这么一行 super()代码来调用父类构造器的
+         *
+         * 最终往上 会调用到 {@link org.apache.dubbo.config.AbstractMethodConfig#AbstractMethodConfig()}
+         * 里面有个 super() 方法, 会调用到 {@link AbstractConfig#AbstractConfig(ScopeModel)}
+         * 最终调用到 {@link AbstractConfig#setScopeModel(ScopeModel)}
+         */
     }
 
     public ServiceConfig(ModuleModel moduleModel) {
@@ -170,7 +187,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     @Override
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
+        // 初始化当前协议对象, 通过扩展机制获取协议 Protocol 类型的对象
         protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        // 初始化当前代理工厂对象, 通过扩展机制获取proxyFactory类型的对象
         proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     }
 
@@ -281,11 +300,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @Override
     public void export() {
+        // 如果服务已经暴露过就不用再次暴露了
         if (this.exported) {
             return;
         }
 
         // ensure start module, compatible with old api usage
+        // dubbo内部有很多代码组件, 如果零零散散的去调用初始化, 很麻烦
         getScopeModel().getDeployer().start();
 
         synchronized (this) {
@@ -294,14 +315,22 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
 
             if (!this.isRefreshed()) {
+                // 进行刷新
                 this.refresh();
             }
+
+
             if (this.shouldExport()) {
+                // 执行服务实例的初始化工作
                 this.init();
 
+                /**
+                 * dubbo延迟发布特性
+                 */
                 if (shouldDelay()) {
                     doDelayExport();
                 } else {
+                    // 核心服务对外发布的源码流程走这里
                     doExport();
                 }
             }

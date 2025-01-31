@@ -140,6 +140,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
             reportMetadata(this.metadataInfo);
+            // 往下
             doRegister(this.serviceInstance);
         }
     }

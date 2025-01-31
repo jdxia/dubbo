@@ -19,7 +19,7 @@ package org.apache.dubbo.springboot.demo.consumer;
 
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.springboot.demo.DemoService;
+import org.apache.dubbo.springboot.demo.AsyncDemoService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -34,9 +34,21 @@ import java.io.File;
 public class ConsumerApplication {
 
     @DubboReference
-    private DemoService demoService;
+    private AsyncDemoService asyncDemoService;
 
     public static void main(String[] args) {
+
+        System.clearProperty("socksProxyHost");
+        System.clearProperty("socksProxyPort");
+
+        System.clearProperty("http.proxyHost");
+        System.clearProperty("http.proxyPort");
+
+        System.clearProperty("https.proxyHost");
+        System.clearProperty("https.proxyPort");
+
+        System.clearProperty("frp.proxyHost");
+        System.clearProperty("frp.proxyPort");
 
         SpringApplication application = new SpringApplication(ConsumerApplication.class);
 
@@ -61,6 +73,6 @@ public class ConsumerApplication {
     }
 
 //    public String doSayHello(String name) {
-//        return demoService.sayHello(name);
+//        return asyncDemoService.sayHello(name);
 //    }
 }

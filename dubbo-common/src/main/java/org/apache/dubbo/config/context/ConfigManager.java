@@ -50,6 +50,11 @@ import static org.apache.dubbo.config.AbstractConfig.getTagName;
  * The Write operation lock with sub configs map of config type, for safely check and add new config.
  */
 public class ConfigManager extends AbstractConfigManager implements ApplicationExt {
+    /**
+     * ConfigManager的作用，无锁配置管理器（通过ConcurrentHashMap），用于快速读取操作。
+     * 写入操作锁带有配置类型的子配置映射，用于安全检查和添加新配置。
+     * 其实ConfigManager实现类中并没有这个初始化方法initialize，不过ConfigManager的父类型AbstractConfigManager中是有initialize方法的
+     */
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
 

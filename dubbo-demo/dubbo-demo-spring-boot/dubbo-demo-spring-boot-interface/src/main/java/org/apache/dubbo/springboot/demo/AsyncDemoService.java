@@ -18,7 +18,7 @@ package org.apache.dubbo.springboot.demo;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface DemoService {
+public interface AsyncDemoService {
 
     String sayHello(String name);
 
@@ -32,7 +32,5 @@ public interface DemoService {
     // 节省服务端的线程资源
     CompletableFuture<String> queryUserName(String name);
 
-
-    User queryUserInfo(User user);
 
 }

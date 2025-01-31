@@ -154,6 +154,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         if (!shouldRegister(url)) { // Should Not Register
             return;
         }
+        // 往下
         doRegister(url);
     }
 
@@ -161,6 +162,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     public void doRegister(URL url) {
         // fixme, add registry-cluster is not necessary anymore
         url = addRegistryClusterKey(url);
+        /**
+         * 往下
+         * {@link org.apache.dubbo.registry.client.AbstractServiceDiscovery#register(org.apache.dubbo.common.URL)}
+         */
         serviceDiscovery.register(url);
     }
 

@@ -221,6 +221,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         ApplicationDeployer deployer = registeredProviderUrl.getOrDefaultApplicationModel().getDeployer();
         try {
             deployer.increaseServiceRefreshCount();
+            /**
+             * 往下
+             * {@link  org.apache.dubbo.registry.ListenerRegistryWrapper#register}
+             *  还有
+             * {@link com.alibaba.dubbo.registry.Registry#register(URL)}
+             */
             registry.register(registeredProviderUrl);
         } finally {
             deployer.decreaseServiceRefreshCount();
@@ -235,16 +241,36 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             registered));
     }
 
+    /**
+     * 服务注册的起点
+     * <dubbo:service-interface="" ref="" /> hostname, port
+     */
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
+        /**
+         * service-discovery-registry://172.30.10.72:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-api-provider&dubbo=2.0.2&executor-management-mode=isolation&file-cache=true&pid=68082&registry=nacos&release=3.2.2&timestamp=1728411526235
+         * nacos://172.30.10.72:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-api-provider&dubbo=2.0.2&executor-management-mode=isolation&file-cache=true&pid=81565&timestamp=1728807756937
+         * 注册的url
+         */
         URL registryUrl = getRegistryUrl(originInvoker);
         // url to export locally
+        /**
+         * 这是dubbo的协议
+         * dubbo://192.168.243.2:20880/org.apache.dubbo.demo.UserService?anyhost=true&application=dubbo-demo-api-provider&background=false&bind.ip=192.168.243.2&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&executor-management-mode=isolation&file-cache=true&generic=false&interface=org.apache.dubbo.demo.UserService&methods=queryUserInfo&pid=68082&prefer.serialization=fastjson2,hessian2&release=3.2.2&service-name-mapping=true&side=provider&timeout=5000&timestamp=1728411526700
+         *
+         * application就是 org.apache.dubbo.demo.UserService
+         *
+         */
         URL providerUrl = getProviderUrl(originInvoker);
 
         // Subscribe the override data
         // FIXME When the provider subscribes, it will affect the scene : a certain JVM exposes the service and call
         //  the same service. Because the subscribed is cached key with the name of the service, it causes the
         //  subscription information to cover.
+        /**
+         * 上面那个不能很好的表示provider, 这边进行转换
+         * provider://192.168.33.30:20880/org.apache.dubbo.demo.UserService?anyhost=true&application=dubbo-demo-api-provider&background=false&bind.ip=192.168.33.30&bind.port=20880&category=configurators&check=false&deprecated=false&dubbo=2.0.2&dynamic=true&executor-management-mode=isolation&file-cache=true&generic=false&interface=org.apache.dubbo.demo.UserService&methods=queryUserInfo&pid=68232&prefer.serialization=fastjson2,hessian2&service-name-mapping=true&side=provider&timeout=5000&timestamp=1728411835716
+         */
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
         Map<URL, Set<NotifyListener>> overrideListeners = getProviderConfigurationListener(overrideSubscribeUrl).getOverrideListeners();
@@ -253,19 +279,24 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
+        // 暴露一个本地服务, netty -> consumer
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
+        // 根据 registry url获取 registry客户端
         final Registry registry = getRegistry(registryUrl);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
 
         // decide if we need to delay publish (provider itself and registry should both need to register)
         boolean register = providerUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
         if (register) {
+            // 服务提供者开始注册节点, 这个节点现在是与具体谁当注册中心无关
+            // 重点
             register(registry, registeredProviderUrl);
         }
 
         // register stated url on provider model
+        // 修改状态
         registerStatedUrl(registryUrl, registeredProviderUrl, register);
 
 
@@ -281,6 +312,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
         }
 
+        // 更新本地缓存, 文件处理
         notifyExport(exporter);
         //Ensure that a new exporter instance is returned every time export
         return new DestroyableExporter<>(exporter);
@@ -288,6 +320,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private <T> void notifyExport(ExporterChangeableWrapper<T> exporter) {
         ScopeModel scopeModel = exporter.getRegisterUrl().getScopeModel();
+        // spi
         List<RegistryProtocolListener> listeners = ScopeModelUtil.getExtensionLoader(RegistryProtocolListener.class, scopeModel)
             .getActivateExtension(exporter.getOriginInvoker().getUrl(), REGISTRY_PROTOCOL_LISTENER_KEY);
         if (CollectionUtils.isNotEmpty(listeners)) {

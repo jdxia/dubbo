@@ -20,9 +20,7 @@ package org.apache.dubbo.springboot.demo.provider;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.rpc.AsyncContext;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.springboot.demo.DemoService;
-import org.apache.dubbo.springboot.demo.User;
-import org.apache.dubbo.springboot.demo.config.Result;
+import org.apache.dubbo.springboot.demo.AsyncDemoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,9 +30,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @DubboService
-public class DemoServiceImpl implements DemoService {
+public class AsyncDemoServiceImpl implements AsyncDemoService {
 
-    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(AsyncDemoServiceImpl.class);
 
     private ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(2, 4, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
@@ -45,6 +43,9 @@ public class DemoServiceImpl implements DemoService {
 
     }
 
+    /**
+     * 服务端异步执行
+     */
     @Override
     public String asyncContextSayHello(String name) {
 
@@ -101,11 +102,6 @@ public class DemoServiceImpl implements DemoService {
         });
     }
 
-    @Override
-    public User queryUserInfo(User user) {
-        user.setName("result");
-        return user;
-    }
 
 
 }

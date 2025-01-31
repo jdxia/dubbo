@@ -552,6 +552,7 @@ public class DubboProtocol extends AbstractProtocol {
                     logger.info("Closing dubbo server: " + server.getLocalAddress());
                 }
 
+                // 关闭 NettyServer
                 server.close(getServerShutdownTimeout(protocolServer));
 
             } catch (Throwable t) {

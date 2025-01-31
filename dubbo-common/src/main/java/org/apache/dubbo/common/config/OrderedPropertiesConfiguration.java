@@ -37,6 +37,8 @@ public class OrderedPropertiesConfiguration implements Configuration {
 
     public void refresh() {
         properties = new Properties();
+
+        //有序的配置提供器扩展获取
         ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = moduleModel.getExtensionLoader(OrderedPropertiesProvider.class);
         Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
         if (CollectionUtils.isEmpty(propertiesProviderNames)) {
@@ -48,10 +50,11 @@ public class OrderedPropertiesConfiguration implements Configuration {
         }
 
         //order the propertiesProvider according the priority descending
+        //根据优先级进行排序，值越小优先级越高
         orderedPropertiesProviders.sort((a, b) -> b.priority() - a.priority());
 
 
-        //override the properties.
+        //override the properties. 目前没看到有具体的扩展实现
         for (OrderedPropertiesProvider orderedPropertiesProvider : orderedPropertiesProviders) {
             properties.putAll(orderedPropertiesProvider.initProperties());
         }

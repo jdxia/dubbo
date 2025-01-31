@@ -53,6 +53,7 @@ public abstract class FailbackRegistry implements org.apache.dubbo.registry.Regi
 
     @Override
     public void register(URL url) {
+        // 往下
         failbackRegistry.register(url.getOriginalURL());
     }
 

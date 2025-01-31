@@ -63,6 +63,9 @@ public class DubboGracefulShutdown implements GracefulShutdown {
                 for (Channel channel : channels) {
                     try {
                         if (channel.isConnected()) {
+                            /**
+                             * {@link HeaderExchangeChannel#send(Object, boolean)}
+                             */
                             channel.send(request, channel.getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
                         }
                     } catch (RemotingException e) {

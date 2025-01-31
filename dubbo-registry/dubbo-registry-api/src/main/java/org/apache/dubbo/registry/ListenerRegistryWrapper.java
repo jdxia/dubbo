@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -59,6 +60,11 @@ public class ListenerRegistryWrapper implements Registry {
     public void register(URL url) {
         try {
             if (registry != null) {
+                /**
+                 * @see ServiceDiscoveryRegistry#register(URL)
+                 *
+                 *
+                 */
                 registry.register(url);
             }
         } finally {
