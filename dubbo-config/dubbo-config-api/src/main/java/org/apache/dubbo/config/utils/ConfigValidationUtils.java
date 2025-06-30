@@ -195,6 +195,8 @@ public class ConfigValidationUtils {
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
         List<URL> registryList = new ArrayList<>();
+
+        // 获取<dubbo:application/>标签
         ApplicationConfig application = interfaceConfig.getApplication();
         List<RegistryConfig> registries = interfaceConfig.getRegistries();
         if (CollectionUtils.isNotEmpty(registries)) {

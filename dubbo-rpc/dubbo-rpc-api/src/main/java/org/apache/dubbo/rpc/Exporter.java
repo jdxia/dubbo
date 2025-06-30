@@ -24,6 +24,10 @@ package org.apache.dubbo.rpc;
  * @see org.apache.dubbo.rpc.protocol.AbstractExporter
  */
 public interface Exporter<T> {
+    /**
+     * 服务暴露对象。其包含一个很重要的方法 getInvoker()，用于获取当前服务暴露实例所 包含的远程调用实例 Invoker，即可以进行的远程调用。
+     * 而 unexport()方法会使服务不进行服务暴露。
+     */
 
     /**
      * get invoker.

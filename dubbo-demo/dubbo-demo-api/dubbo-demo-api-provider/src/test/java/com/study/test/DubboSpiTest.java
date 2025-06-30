@@ -26,7 +26,7 @@ public class DubboSpiTest {
             System.out.println(supportedExtension);
         }
 
-        System.out.println("==================激活的扩展点实例====================");
+        System.out.println("====================激活的扩展点实例====================");
 
         // 激活的扩展点实例
         List<Protocol> activateExtensions = extensionLoader.getActivateExtensions();

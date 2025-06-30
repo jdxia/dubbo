@@ -76,6 +76,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
         }
     }
 
+    // 当Spring容器创建时会触发该方法的执行
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (isOriginalEventSource(event)) {
@@ -106,8 +107,11 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
             DubboBootstrapStartStopListenerSpringAdapter.applicationContext = event.getApplicationContext();
         }
 
+        // 容器刷新事件（容器创建、刷新会引发该事件）
         if (event instanceof ContextRefreshedEvent) {
             onContextRefreshedEvent((ContextRefreshedEvent) event);
+
+            // 容器关闭事件
         } else if (event instanceof ContextClosedEvent) {
             onContextClosedEvent((ContextClosedEvent) event);
         }

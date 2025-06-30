@@ -94,36 +94,57 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
         }
     }
 
+    // 最短相应时间策略，和最少调用数策略类似, 就是把调用数的判断，替换为响应时间
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         // Number of invokers
+        // 集群invoker个数
         int length = invokers.size();
+
         // Estimated shortest response time of all invokers
+        // 最短响应时间
         long shortestResponse = Long.MAX_VALUE;
+
         // The number of invokers having the same estimated shortest response time
+        // 含有相同最短响应时间的invoker数量
         int shortestCount = 0;
+
         // The index of invokers having the same estimated shortest response time
+        // 保存最短响应时间的invoker数组
         int[] shortestIndexes = new int[length];
+
         // the weight of every invokers
+        // 保存每个invoker的权重
         int[] weights = new int[length];
+
         // The sum of the warmup weights of all the shortest response  invokers
+        // 含有相同最短响应时间的权重总和
         int totalWeight = 0;
+
         // The weight of the first shortest response invokers
+        // 最短响应时间的其实权重
         int firstWeight = 0;
+
         // Every shortest response invoker has the same weight value?
+        // 是否包含最短响应时间的invoker权重的相同
         boolean sameWeight = true;
 
         // Filter out all the shortest response invokers
+        // 遍历invokers，找出包含相同最短相应时间的所有invoker
         for (int i = 0; i < length; i++) {
             Invoker<T> invoker = invokers.get(i);
             RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
+            // 这里是一个缓存，类似RoundRobinLoadBalance中缓存权重
             SlideWindowData slideWindowData = ConcurrentHashMapUtils.computeIfAbsent(methodMap, rpcStatus, SlideWindowData::new);
 
             // Calculate the estimated response time from the product of active connections and succeeded average elapsed time.
+            // 获取对应方法的响应时间
             long estimateResponse = slideWindowData.getEstimateResponse();
+            // AbstractLoadBalance中获取invoker权重的逻辑
             int afterWarmup = getWeight(invoker, invocation);
             weights[i] = afterWarmup;
             // Same as LeastActiveLoadBalance
+            // 这里和LeastActiveLoadBalance类似
             if (estimateResponse < shortestResponse) {
                 shortestResponse = estimateResponse;
                 shortestCount = 1;
@@ -144,6 +165,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
         if (System.currentTimeMillis() - lastUpdateTime > slidePeriod
             && onResetSlideWindow.compareAndSet(false, true)) {
             //reset slideWindowData in async way
+            //同步更新最短响应时间缓存
             executorService.execute(() -> {
                 methodMap.values().forEach(SlideWindowData::reset);
                 lastUpdateTime = System.currentTimeMillis();
@@ -151,6 +173,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
             });
         }
 
+        // 这里和LeastActiveLoadBalance类似
         if (shortestCount == 1) {
             return invokers.get(shortestIndexes[0]);
         }

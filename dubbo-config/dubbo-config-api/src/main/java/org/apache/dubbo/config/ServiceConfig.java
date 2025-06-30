@@ -114,6 +114,8 @@ import static org.apache.dubbo.rpc.support.ProtocolUtils.isGeneric;
 
 public class ServiceConfig<T> extends ServiceConfigBase<T> {
     /**
+     * ServiceConfig可以说是每暴露一个接口就会有一个ServiceConfig对象
+     *
      * 服务配置实现类
      * 这个类 型是我们出现的第一个服务配置实现类型，服务配置实现类已经从父类型中继承了这么多的属性，
      * 这里主要为实现服务提供了一些配置如服务的协议配置，
@@ -127,6 +129,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     /**
      * A random port cache, the different protocols who have no port specified have different random port
      */
+    //记录随机端口的
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
 
     private Protocol protocolSPI;
@@ -319,13 +322,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 this.refresh();
             }
 
-
+            // 若<dubbo:service/>的export属性为true，且当前服务尚未暴露
             if (this.shouldExport()) {
                 // 执行服务实例的初始化工作
                 this.init();
 
                 /**
                  * dubbo延迟发布特性
+                 *   @Service(delay =1000 )
                  */
                 if (shouldDelay()) {
                     doDelayExport();
@@ -476,9 +480,18 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             return;
         }
 
+        /**
+         * 若<dubbo:service/>的path属性为空，则取interface属性值
+         * URL的格式  protocol://ip:port/path?a=b&b=c&...
+         */
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
+
+        /**
+         * 假设有3个注册中心，2个服务暴露协议
+         * 为每个服务暴露协议在每个注册中心中进行暴露
+         */
         doExportUrls();
         exported();
     }
@@ -506,10 +519,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         providerModel.setDestroyRunner(getDestroyRunner());
         repository.registerProvider(providerModel);
 
+        // 获取所有注册中心的【标准化地址URL】与【兼容性地址URL】
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
         MetricsEventBus.post(RegistryEvent.toRsEvent(module.getApplicationModel(), getUniqueServiceName(), protocols.size() * registryURLs.size()),
             () -> {
+                // 遍历所有服务暴露协议(<dubbo:protocol/>）
                 for (ProtocolConfig protocolConfig : protocols) {
                     String pathKey = URL.buildKey(getContextPath(protocolConfig)
                         .map(p -> p + "/" + path)

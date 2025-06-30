@@ -34,6 +34,9 @@ import org.apache.dubbo.rpc.model.ServiceModel;
  * @see org.apache.dubbo.rpc.RpcInvocation
  */
 public interface Invocation {
+    /**
+     * 其封装了远程调用的具体信息
+     */
 
     String getTargetServiceUniqueName();
 

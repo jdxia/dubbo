@@ -46,6 +46,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
      * @return weight which takes warmup into account
      */
     static int calculateWarmupWeight(int uptime, int warmup, int weight) {
+        // 此位置用除法不太好理解，其实就是uptime/warmup*weight，也就是根据启动时间在配置的整个预热时间段的占比，获取权重
         int ww = (int) ( uptime / ((float) warmup / weight));
         return ww < 1 ? 1 : (Math.min(ww, weight));
     }
@@ -55,9 +56,12 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         if (CollectionUtils.isEmpty(invokers)) {
             return null;
         }
+        // 如果 invokers 列表中仅有一个 Invoker，直接返回即可，无需进行负载均衡
         if (invokers.size() == 1) {
             return invokers.get(0);
         }
+
+        // 调用 doSelect 方法进行负载均衡，该方法为抽象方法，由子类实现
         return doSelect(invokers, url, invocation);
     }
 
@@ -80,18 +84,24 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         }
 
         // Multiple registry scenario, load balance among multiple registries.
+        // 注册中心不需要预热
         if (REGISTRY_SERVICE_REFERENCE_PATH.equals(url.getServiceInterface())) {
             weight = url.getParameter(WEIGHT_KEY, DEFAULT_WEIGHT);
         } else {
+            // 在注册url中获取配置的权重参数
             weight = url.getMethodParameter(invocation.getMethodName(), WEIGHT_KEY, DEFAULT_WEIGHT);
             if (weight > 0) {
+                // 在注册url中获取服务启动的时间
                 long timestamp = invoker.getUrl().getParameter(TIMESTAMP_KEY, 0L);
                 if (timestamp > 0L) {
+                    // 当前时间-启动时间=运行时间
                     long uptime = System.currentTimeMillis() - timestamp;
                     if (uptime < 0) {
                         return 1;
                     }
+                    // 在注册url中获取配置的预热时间
                     int warmup = invoker.getUrl().getParameter(WARMUP_KEY, DEFAULT_WARMUP);
+                    // 如果运行时间 < 配置的预热时间，计算当前invoker的权重
                     if (uptime > 0 && uptime < warmup) {
                         weight = calculateWarmupWeight((int)uptime, warmup, weight);
                     }

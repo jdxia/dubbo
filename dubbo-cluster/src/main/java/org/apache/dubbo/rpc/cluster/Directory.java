@@ -33,6 +33,9 @@ import java.util.List;
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
  */
 public interface Directory<T> extends Node {
+    /**
+     * Directory 中包含一个很重要的方法 list()，其返回结果为一个 List<Invoker>。其实简单来 说，可以将 Directory 理解为一个动态的 Invoker 列表
+     */
 
     /**
      * get service type.

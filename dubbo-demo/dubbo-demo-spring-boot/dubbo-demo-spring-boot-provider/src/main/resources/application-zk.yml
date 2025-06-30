@@ -57,8 +57,15 @@ dubbo:
   registry: # registry的配置会被解析后作为config-center和metadata-report的地址
     id: my-registry
     check: true
+    # 推空保护是对消费端而言的，当推空保护开启后，消费端进程会忽略注册中心推送过来的空地址事件（会继续保留当前内存已有地址列表）。
+    # 这是避免在一些异常场景下误将注册中心地址列表清空，导致服务调用不可用。
+    # 推空保护默认关闭，可通过以下方式开启
+    enableEmptyProtection: true
     timeout: 30000 # 连接超时时间，默认 30s
     session: 60000 # 会话超时时间，默认 60s
+    # 注册中心缓存文件的默认存放路径是：${HOME}/.dubbo/dubbo-registry-{application-name}-{address}.cache，以一定的间隔定期刷新
+    # 如果此时因网络故障等原因导致读取可用地址列表失败，框架会查询本地缓存的注册中心地址并返回（如不想使用使用缓存地址，可通过设置 check=true 快速失败抛出异常）
+    file-cache: false
     address: ${zk.address}
 #  不想使用 nacos 作为配置中心，可以通过以下两个参数来调整或控制默认行为
 #    use-as-config-center: false

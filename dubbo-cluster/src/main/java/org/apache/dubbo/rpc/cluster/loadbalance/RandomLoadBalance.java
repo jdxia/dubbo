@@ -51,11 +51,14 @@ public class RandomLoadBalance extends AbstractLoadBalance {
      * @param <T>
      * @return The selected invoker
      */
+    // 权重随机策略，最常见的负载均衡策略，根据上面提到的计算权重，在 invoker 集群间进行随机调用，但是由于随机的概率学特性，在 qps 较少的情况下，有可能出现流量倾斜
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         // Number of invokers
+        // 集群invoker个数
         int length = invokers.size();
 
+        // 是否需要根据权重进行负载均衡，方法内部就是看是不是配置了权重和启动时间
         if (!needWeightLoadBalance(invokers, invocation)) {
             return invokers.get(ThreadLocalRandom.current().nextInt(length));
         }
@@ -63,24 +66,35 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         // Every invoker has the same weight?
         boolean sameWeight = true;
         // the maxWeight of every invoker, the minWeight = 0 or the maxWeight of the last invoker
+        // 存下每个invoker配置的权重
         int[] weights = new int[length];
         // The sum of weights
+        // 配置的权重总和
         int totalWeight = 0;
         for (int i = 0; i < length; i++) {
+            // AbstractLoadBalance中获取invoker权重的逻辑
             int weight = getWeight(invokers.get(i), invocation);
             // Sum
+            // 求和
             totalWeight += weight;
             // save for later use
+            // 依次存入当前invoker的权重上限
             weights[i] = totalWeight;
+
+            // 如果权重总和，不是invoker数量*weight，说明不是统一的权重
             if (sameWeight && totalWeight != weight * (i + 1)) {
                 sameWeight = false;
             }
         }
+
+        // 如果不是统一的权重，按照权重随机
         if (totalWeight > 0 && !sameWeight) {
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
+            // 根据权重总和，获取一个随机数offset
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return an invoker based on the random value.
             if (length <= 4) {
+                // 遍历weights，看这个offset存在于哪个，就使用哪个invoker，比如三个invoker分别是10，20，30，weights=[10,30,60]，随机了一个29，那么就选择第二个invoker
                 for (int i = 0; i < length; i++) {
                     if (offset < weights[i]) {
                         return invokers.get(i);
@@ -100,6 +114,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             }
         }
         // If all invokers have the same weight value or totalWeight=0, return evenly.
+        // 如果是统一的权重，直接随机invoker数量
         return invokers.get(ThreadLocalRandom.current().nextInt(length));
     }
 

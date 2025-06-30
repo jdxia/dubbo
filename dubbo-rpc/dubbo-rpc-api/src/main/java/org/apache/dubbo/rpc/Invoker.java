@@ -26,6 +26,10 @@ import org.apache.dubbo.common.Node;
  * @see org.apache.dubbo.rpc.protocol.AbstractInvoker
  */
 public interface Invoker<T> extends Node {
+    /**
+     * 其是提供者 provider 的代理对象，在代码中就代表提供者。特别是在消费者进行远程调 用时，其通过服务路由、负载均衡、集群容错等机制要查找的就是 Invoker。
+     * 找到了其需要 的 Invoker 实例就可以进行远程调用了
+     */
 
     /**
      * get service interface.

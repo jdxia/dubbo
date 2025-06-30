@@ -161,6 +161,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             initialize();
 
             // export services
+            // 服务暴露
             exportServices();
 
             // prepare application instance
@@ -170,6 +171,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             }
 
             // refer services
+            // 服务引用
             referServices();
 
             // if no async export/refer services, just set started
@@ -361,6 +363,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private void exportServices() {
+        // 遍历当前配置文件中的所有<dubbo:service/>标签
         for (ServiceConfigBase sc : configManager.getServices()) {
             exportServiceInternal(sc);
         }
@@ -374,6 +377,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         if (sc.isExported()) {
             return;
         }
+
+        // 判断是否是异步暴露
         if (exportAsync || sc.shouldExportAsync()) {
             ExecutorService executor = executorRepository.getServiceExportExecutor();
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
@@ -388,8 +393,13 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             }, executor);
 
             asyncExportingFutures.add(future);
-        } else {
+        } else {  // 处理同步暴露情况
+            // 若尚未暴露
             if (!sc.isExported()) {
+                /**
+                 *  服务暴露
+                 * {@link ServiceConfig#export()}
+                 */
                 sc.export();
                 exportedServices.add(sc);
             }
