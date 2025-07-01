@@ -111,8 +111,8 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
         if (event instanceof ContextRefreshedEvent) {
             onContextRefreshedEvent((ContextRefreshedEvent) event);
 
-            // 容器关闭事件
         } else if (event instanceof ContextClosedEvent) {
+            // 容器关闭事件
             onContextClosedEvent((ContextClosedEvent) event);
         }
     }
