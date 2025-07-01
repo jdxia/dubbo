@@ -192,37 +192,56 @@ public class ConfigValidationUtils {
 
     public static final String IPV6_END_MARK = "]";
 
+    /**
+     * 获取到了一个URL集合，其实这里就是获取注册中心列表，一个URL就是一个注册中心,会生成一个标准化的URL和兼容URL,registry开头的为标准URL
+     */
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
         List<URL> registryList = new ArrayList<>();
 
         // 获取<dubbo:application/>标签
         ApplicationConfig application = interfaceConfig.getApplication();
+
+        // 获取<dubbo:registry/>标签
         List<RegistryConfig> registries = interfaceConfig.getRegistries();
         if (CollectionUtils.isNotEmpty(registries)) {
+            // 遍历所有<dubbo:registry/>标签
             for (RegistryConfig config : registries) {
                 // try to refresh registry in case it is set directly by user using config.setRegistries()
                 if (!config.isRefreshed()) {
                     config.refresh();
                 }
+                // 获取<dubbo:registry/>标签的address属性
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
                     address = ANYHOST_VALUE;
                 }
+
+                // 只要address不是N/A，即不是不可用
                 if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+
+                    // 创建并初始化一个map，这个map中的值为<dubbo:registry/>标签及相当标签中的属性值
                     Map<String, String> map = new HashMap<String, String>();
+
+                    // 将<dubbo:application/>标签属性写入map
                     AbstractConfig.appendParameters(map, application);
+
+                    // 将<dubbo:registry/>标签属性写入map
                     AbstractConfig.appendParameters(map, config);
                     map.put(PATH_KEY, RegistryService.class.getName());
                     AbstractInterfaceConfig.appendRuntimeParameters(map);
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
+
+                    // 构建注册中心标准URL
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
                         url = URLBuilder.from(url)
+                            // 向URL中添加registry属性，例如registry=zookeeper
                             .addParameter(REGISTRY_KEY, url.getProtocol())
+                            // 将URL的协议修改为registry
                             .setProtocol(extractRegistryType(url))
                             .setScopeModel(interfaceConfig.getScopeModel())
                             .build();
@@ -234,6 +253,8 @@ public class ConfigValidationUtils {
                 }
             }
         }
+
+        // 为每个标准URL生成一个兼容URL
         return genCompatibleRegistries(interfaceConfig.getScopeModel(), registryList, provider);
     }
 
