@@ -534,6 +534,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         // In case user specified path, register service one more time to map it to path.
                         repository.registerService(pathKey, interfaceClass);
                     }
+                    // 使用当前遍历的服务暴露协议与所有注册中心配对进行服务暴露
                     doExportUrlsFor1Protocol(protocolConfig, registryURLs);
                 }
                 return null;
@@ -544,17 +545,29 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+        /**
+         * 构建服务暴露URL要使用的map
+         * 这个方法首先判断ProtocolConfig的协议，如果没有默认设置成dubbo，
+         * 再往下就是设置参数，比如说side=provider，dubbo=2.2.0,timestamp,pid等等，然后把一些config中的配置塞到map中，接着就是遍历处理MethodConfig。
+         * 再接着就是判断是不是泛化调用，如果是就把范化的信息扔到map中，设置methods=*，如果不是泛化调用，就找到你所有的method，然后将methods=你所有method名拼接起来。
+         */
         Map<String, String> map = buildAttributes(protocolConfig);
 
         // remove null key and null value
         map.keySet().removeIf(key -> StringUtils.isEmpty(key) || StringUtils.isEmpty(map.get(key)));
         // init serviceMetadata attachments
+        // 元数据注册
         serviceMetadata.getAttachments().putAll(map);
 
+        /**
+         * 构建服务暴露URL
+         * dubbo://192.168.124.7:20881/org.apache.dubbo.demo.GreetingService?anyhost=true&application=demo-provider&bind.ip=192.168.124.7&bind.port=20881&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=25778&release=&revision=1.0.0&side=provider&timestamp=1656114630120&version=1.0.0
+         */
         URL url = buildUrl(protocolConfig, map);
 
         processServiceExecutor(url);
 
+        // 服务暴露
         exportUrl(url, registryURLs);
     }
 
@@ -740,16 +753,21 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private void exportUrl(URL url, List<URL> registryURLs) {
+        // 获取<dubbo:service/>的scope属性
         String scope = url.getParameter(SCOPE_KEY);
+
         // don't export when none is configured
+        // 若scope的值不等于none，则进行暴露
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
 
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
+                // 本地暴露
                 exportLocal(url);
             }
 
             // export to remote if the config is not local (export to local only when config is local)
+            // 若scope的值不等于remote，则进行本地暴露
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 // export to extra protocol is used in remote export
                 String extProtocol = url.getParameter("ext.protocol", "");
@@ -763,6 +781,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         build();
                 }
 
+                // 远程暴露
                 url = exportRemote(url, registryURLs);
                 if (!isGeneric(generic) && !getScopeModel().isInternal()) {
                     MetadataUtils.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
@@ -840,10 +859,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrl(URL url, boolean withMetaData) {
+        // 构建出invoker
         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
         if (withMetaData) {
             invoker = new DelegateProviderMetaDataInvoker(invoker, this);
         }
+        // 远程暴露
         Exporter<?> exporter = protocolSPI.export(invoker);
         exporters.add(exporter);
     }
@@ -854,13 +875,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private void exportLocal(URL url) {
         URL local = URLBuilder.from(url)
+            // 将URL的protocol设置为injvm
             .setProtocol(LOCAL_PROTOCOL)
             .setHost(LOCALHOST_VALUE)
+            // URL没有端口号
             .setPort(0)
             .build();
         local = local.setScopeModel(getScopeModel())
             .setServiceModel(providerModel);
         local = local.addParameter(EXPORTER_LISTENER_KEY, LOCAL_PROTOCOL);
+        // 本地暴露
         doExportUrl(local, false);
         logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
     }

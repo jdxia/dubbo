@@ -26,7 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Application {
+public class ProviderApp {
 
     //    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
 

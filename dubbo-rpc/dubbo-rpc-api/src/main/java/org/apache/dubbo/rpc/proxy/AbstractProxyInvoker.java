@@ -84,6 +84,12 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     public void destroy() {
     }
 
+    /**
+     * 调用
+     * @param invocation 调用实体
+     * @return 结果实体
+     * @throws RpcException
+     */
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         ProfilerEntry originEntry = null;
@@ -148,6 +154,15 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         return CompletableFuture.completedFuture(value);
     }
 
+    /**
+     * 进行调用
+     * @param proxy 实现类
+     * @param methodName 方法名
+     * @param parameterTypes  参数类型们
+     * @param arguments  参数
+     * @return
+     * @throws Throwable
+     */
     protected abstract Object doInvoke(T proxy, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable;
 
     @Override

@@ -105,12 +105,17 @@ public class RouterChain<T> {
         // 3. Main chain has been update success => notifyingInvokers.get() != null
         //     If `availableInvokers` is created from origin invokers => use backup chain
         //     If `availableInvokers` is created from newly invokers  => use main chain
+
+        // 智能链选择逻辑
         BitList<Invoker<T>> notifying = notifyingInvokers.get();
         if (notifying != null &&
             currentChain == backupChain &&
             availableInvokers.getOriginList() == notifying.getOriginList()) {
+            // 使用已更新的主链
             return mainChain;
         }
+
+        // 使用当前链
         return currentChain;
     }
 

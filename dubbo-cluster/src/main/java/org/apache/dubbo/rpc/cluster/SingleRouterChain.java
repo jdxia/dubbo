@@ -299,7 +299,10 @@ public class SingleRouterChain<T> {
      * Notify whenever addresses in registry change.
      */
     public void setInvokers(BitList<Invoker<T>> invokers) {
+        // 设置新的invokers引用
         this.invokers = (invokers == null ? BitList.emptyList() : invokers);
+
+        // 通知所有路由器：状态已更新
         routers.forEach(router -> router.notify(this.invokers));
         stateRouters.forEach(router -> router.notify(this.invokers));
     }
