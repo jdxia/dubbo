@@ -173,6 +173,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             }
         }
 
+        // 往下
         Invoker<T> invoker = doSelect(loadbalance, invocation, invokers, selected);
 
         if (sticky) {
@@ -193,6 +194,8 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             checkShouldInvalidateInvoker(tInvoker);
             return tInvoker;
         }
+
+        // 往下
         Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
 
         //If the `invoker` is in the  `selected` or invoker is unavailable && availablecheck is true, reselect.

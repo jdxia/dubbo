@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler;
 import org.apache.dubbo.rpc.GracefulShutdown;
 import org.apache.dubbo.rpc.ProtocolServer;
 
@@ -53,18 +54,23 @@ public class DubboGracefulShutdown implements GracefulShutdown {
 
     private void sendEvent(String event) {
         try {
+            // 遍历所有服务器
             for (ProtocolServer server : dubboProtocol.getServers()) {
                 Collection<Channel> channels = server.getRemotingServer().getChannels();
                 Request request = new Request();
                 request.setEvent(event);
+                // 单向通信，客户端发送请求后不等待响应，直接返回
                 request.setTwoWay(false);
                 request.setVersion(Version.getProtocolVersion());
 
+                // 向每个channel发送事件
                 for (Channel channel : channels) {
                     try {
                         if (channel.isConnected()) {
                             /**
                              * {@link HeaderExchangeChannel#send(Object, boolean)}
+                             *
+                             * 接收处理的是在 {@link HeaderExchangeHandler#handlerEvent(Channel, Request)}
                              */
                             channel.send(request, channel.getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
                         }

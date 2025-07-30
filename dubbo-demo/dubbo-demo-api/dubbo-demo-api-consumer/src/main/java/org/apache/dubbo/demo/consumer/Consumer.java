@@ -24,18 +24,17 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.DemoService;
-import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Application {
+public class Consumer {
 
-//    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
+    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
 
-    private static final String REGISTRY_URL = "zookeeper://192.168.33.20:2181";
+//    private static final String REGISTRY_URL = "zookeeper://192.168.33.20:2181";
 
 //    private static final String REGISTRY_URL = "nacos://192.168.33.20:8848";
 
@@ -73,6 +72,8 @@ public class Application {
         demoServiceReferenceConfig.setCluster("failover");
         //设置超时时间
         demoServiceReferenceConfig.setTimeout(5000);
+        demoServiceReferenceConfig.setGroup("demo");
+        demoServiceReferenceConfig.setVersion("1.0.0");
 
 
         referenceConfigList.add(demoServiceReferenceConfig);

@@ -28,9 +28,9 @@ import java.util.List;
 
 public class ProviderApp {
 
-    //    private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
+        private static final String REGISTRY_URL = "zookeeper://127.0.0.1:2181";
 
-    private static final String REGISTRY_URL = "zookeeper://192.168.33.20:2181";
+//    private static final String REGISTRY_URL = "zookeeper://192.168.33.20:2181";
 
     // http://192.168.33.20:8848/nacos
 //    private static final String REGISTRY_URL = "nacos://192.168.33.20:8848";
@@ -58,6 +58,8 @@ public class ProviderApp {
         // 设置你服务暴露出去的接口
         demoServiceServiceConfig.setInterface(DemoService.class);
         demoServiceServiceConfig.setRef(new DemoServiceImpl());
+        demoServiceServiceConfig.setVersion("1.0.0");
+        demoServiceServiceConfig.setGroup("demo");
         // 开启异步化支持
 //        demoServiceServiceConfig.setAsync(Boolean.TRUE);
         // 设置超时

@@ -85,6 +85,10 @@ public class DubboShutdownHook extends Thread {
         // send readonly for shutdown hook
         List<GracefulShutdown> gracefulShutdowns = GracefulShutdown.getGracefulShutdowns(applicationModel.getFrameworkModel());
         for (GracefulShutdown gracefulShutdown : gracefulShutdowns) {
+            /**
+             * 框架向所有消费方（通过遍历其持有的channel链接）发送readonly事件，收到事件的消费方将会停止往该实例发送新的请求
+             * {@link org.apache.dubbo.rpc.protocol.dubbo.DubboGracefulShutdown#readonly()}
+             */
             gracefulShutdown.readonly();
         }
 

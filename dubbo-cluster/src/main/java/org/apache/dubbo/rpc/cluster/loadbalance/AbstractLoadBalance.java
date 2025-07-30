@@ -46,7 +46,29 @@ public abstract class AbstractLoadBalance implements LoadBalance {
      * @return weight which takes warmup into account
      */
     static int calculateWarmupWeight(int uptime, int warmup, int weight) {
-        // 此位置用除法不太好理解，其实就是uptime/warmup*weight，也就是根据启动时间在配置的整个预热时间段的占比，获取权重
+        /**
+         * 根据启动时间在配置的整个预热时间段的占比，获取权重
+         * 计算公式：实际权重 = (运行时间 / 预热时间) * 配置权重
+         * 这里用除法实现：uptime / (warmup / weight) = (uptime * weight) / warmup
+         *
+         * 1分钟
+         * 实际权重 = (60,000 / 600,000) * 100 = 0.1 * 100 = 10
+         * 5分钟
+         * 实际权重 = (300,000 / 600,000) * 100 = 0.5 * 100 = 50
+         *
+         * 如果2-3分钟发完, 那weight要调小, warmup也要小
+         *
+         * # 缩短预热时间到3分钟
+         * dubbo.provider.warmup=180000
+         * # 降低权重差异, 不然最后的老pod请求数会翻倍
+         * dubbo.provider.weight=50
+         *
+         * 1分钟
+         * 实际权重 = (60000 / 180000) * 50 = 16  原本是10
+         * 5分钟
+         * 实际权重 = (300000 / 180000) * 50 = 84 原本是 50
+         *
+         */
         int ww = (int) ( uptime / ((float) warmup / weight));
         return ww < 1 ? 1 : (Math.min(ww, weight));
     }
