@@ -90,10 +90,12 @@ public class ExtensionDirector implements ExtensionAccessor {
         }
 
         // 1. find in local cache
-        // 查找本地缓存
+        // 查找本地缓存, 从缓存map中获取接口SPI接口的extensionLoader实例
         ExtensionLoader<T> loader = (ExtensionLoader<T>) extensionLoadersMap.get(type);
 
         ExtensionScope scope = extensionScopeMap.get(type);
+
+        // 若为null，则创建一个并放入到缓存map
         if (scope == null) {
             /**
              * 这边可以用, rpc的这个协议来辅助看

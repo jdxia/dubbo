@@ -108,36 +108,57 @@ public class ExtensionLoader<T> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(
         ExtensionLoader.class);
 
+    // ,分隔
     private static final Pattern NAME_SEPARATOR         = Pattern.compile("\\s*[,]+\\s*");
+
     private static final String  SPECIAL_SPI_PROPERTIES = "special_spi.properties";
 
+    // 静态变量存储的是每个SPI接口的多个实现类和对应实例之间的关系。因此java进程中通常对应接口实现类对象是单例的。
     private final ConcurrentMap<Class<?>, Object> extensionInstances = new ConcurrentHashMap<>(64);
 
+    // 当前SPI接口类
     private final Class<?> type;
 
+    // 扩展类工厂
     private final ExtensionInjector injector;
 
+    // 扩展类和扩展名称映射关系
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
 
     // Holder 是个包装类, 很简单的
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
+    // 扩展名称和自动激活扩展类映射关系
     private final    Map<String, Object>                   cachedActivates        = Collections.synchronizedMap(
         new LinkedHashMap<>());
+
+    // 扩展名称和 自动激活扩展类的group属性集合
     private final    Map<String, Set<String>>              cachedActivateGroups   = Collections.synchronizedMap(
         new LinkedHashMap<>());
+
+    // 扩展名称和 自动激活扩展类的value属性集合
     private final    Map<String, String[][]>               cachedActivateValues   = Collections.synchronizedMap(
         new LinkedHashMap<>());
+
+    // 扩展名称和扩展类实例映射关系，SPI类对应的实例，懒加载
     private final    ConcurrentMap<String, Holder<Object>> cachedInstances        = new ConcurrentHashMap<>();
+
+    // 自适应扩展类实例缓存,只能有一个
     private final    Holder<Object>                        cachedAdaptiveInstance = new Holder<>();
+
+    // 自适应扩展类
     private volatile Class<?>                              cachedAdaptiveClass    = null;
+
+    // SPI接口默认的扩展名称
     private          String                                cachedDefaultName;
     private volatile Throwable                             createAdaptiveInstanceError;
 
+    // 包装扩展类集合
     private Set<Class<?>> cachedWrapperClasses;
 
     private final Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
 
+    // 类路径加载策略，从哪些路径加载扩展类
     private static volatile LoadingStrategy[] strategies = loadLoadingStrategies();
 
     private static final Map<String, String> specialSPILoadingStrategyMap = getSpecialSPILoadingStrategyMap();
