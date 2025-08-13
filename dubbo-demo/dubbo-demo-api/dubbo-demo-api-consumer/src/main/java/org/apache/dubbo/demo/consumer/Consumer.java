@@ -24,11 +24,13 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class Consumer {
 
@@ -88,10 +90,26 @@ public class Consumer {
 
         // 直接通过 ReferenceConfig 拿到一个 DemoService 接口类型, 底层是用了动态代理
 //        DemoService demoService1 = demoServiceReferenceConfig.get();
-        
+
         DemoService demoService = bootstrap.getCache().get(demoServiceReferenceConfig);
         String message = demoService.sayHello("dubbo");
         System.out.println("=========> provider: " + message);
+
+        // 调用 sayHelloAsyncContext - 使用 AsyncContext
+        // setAsync(Boolean.TRUE); 要放开
+        demoService.sayHelloAsyncContext("异步上下文");
+        CompletableFuture<String> contextFuture = RpcContext.getContext().getCompletableFuture();
+        contextFuture.thenAccept(result ->
+            System.out.println("=========> sayHelloAsyncContext 结果: " + result)
+        );
+
+        // 等待异步结果完成
+        try {
+            Thread.sleep(1000); // 等待异步调用完成
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
 
         // generic invoke
         GenericService genericService = (GenericService) demoService;

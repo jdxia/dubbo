@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.demo;
 
+import org.apache.dubbo.rpc.AsyncContext;
+import org.apache.dubbo.rpc.RpcContext;
+
 import java.util.concurrent.CompletableFuture;
 
 public interface DemoService {
@@ -24,6 +27,22 @@ public interface DemoService {
 
     default CompletableFuture<String> sayHelloAsync(String name) {
         return CompletableFuture.completedFuture(sayHello(name));
+    }
+
+    default String sayHelloAsyncContext(String msg) {
+        final AsyncContext asyncContext = RpcContext.startAsync();
+        new Thread(() -> {
+            // 如果要使用上下文，则必须要放在第一句执行
+            asyncContext.signalContextSwitch();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // 写回响应
+            asyncContext.write("Hello " + msg + ", response from provider.");
+        }).start();
+        return null;
     }
 
 }

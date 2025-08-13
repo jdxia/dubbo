@@ -83,7 +83,10 @@ public abstract class AbstractLoadBalance implements LoadBalance {
             return invokers.get(0);
         }
 
-        // 调用 doSelect 方法进行负载均衡，该方法为抽象方法，由子类实现
+        /**
+         * 调用 doSelect 方法进行负载均衡，该方法为抽象方法，由子类实现
+         * {@link RandomLoadBalance#doSelect(List, URL, Invocation)}
+         */
         return doSelect(invokers, url, invocation);
     }
 

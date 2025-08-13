@@ -61,6 +61,5 @@ public class ProviderApplication {
         application.run(args);
 
         System.out.println("============> dubbo service started");
-        new CountDownLatch(1).await();
     }
 }

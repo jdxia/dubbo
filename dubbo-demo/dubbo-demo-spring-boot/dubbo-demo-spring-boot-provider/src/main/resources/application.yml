@@ -10,7 +10,7 @@ spring:
     encoding: UTF-8
 
 zk:
-  address: zookeeper://192.168.33.20:2181
+  address: zookeeper://127.0.0.1:2181
 
 nacos:
   address: nacos://192.168.33.20:8848
@@ -40,6 +40,7 @@ dubbo:
       auto-trust-serialize-class: true #  启用扫描
       trust-serialize-class-level: 3
     dump:
+      # 导出路径: user.home标识的用户主目录, 导出间隔: 最短间隔允许每隔10分钟导出一次, 导出开关: 默认打开
       enable: false
       directory: /tmp
     qos-enable: true
@@ -54,6 +55,7 @@ dubbo:
     # 限制最大接收连接数
     accept: 1000
     port: -1
+    accesslog: true  # 开启访问日志
     # sent和序列号在io线程上操作
 #    dispatcher: all
   registry: # registry的配置会被解析后作为config-center和metadata-report的地址
@@ -88,6 +90,9 @@ dubbo:
   consumer:
     timeout: 5000 # 配置客户端超时, 默认1s
     check: false
+    # deadline机制默认关闭
+    parameters:
+      enable-timeout-countdown: true
   metrics:
     protocol: prometheus
     enable-jvm: true

@@ -39,6 +39,12 @@ public class AsyncDemoServiceImpl implements AsyncDemoService {
     @Override
     public String sayHello(String name) {
         logger.info("============> Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
+
+        try {
+            TimeUnit.SECONDS.sleep(6L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return "Hello " + name;
 
     }

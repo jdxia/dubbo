@@ -1,6 +1,6 @@
 spring:
   application:
-    name: dubbo-springboot-demo-provider
+    name: dubbo-springboot-demo-consumer
   main:
     banner-mode: off
   web:
@@ -10,7 +10,7 @@ spring:
     encoding: UTF-8
 
 zk:
-  address: zookeeper://192.168.33.20:2181
+  address: zookeeper://127.0.0.1:2181
 
 nacos:
   address: nacos://192.168.33.20:8848
@@ -102,7 +102,7 @@ logging:
 
 server:
   address: 0.0.0.0
-  port: 8284
+  port: 8283
   shutdown: graceful
   servlet:
     encoding:

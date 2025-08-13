@@ -83,7 +83,10 @@ public class ExtensionDirector implements ExtensionAccessor {
         if (!type.isInterface()) {
             throw new IllegalArgumentException("Extension type (" + type + ") is not an interface!");
         }
-        // 类型是不是有扩展点的注解, 有没有 @SPI 注解
+        /**
+         * 类型是不是有扩展点的注解, 有没有 @SPI 注解
+         * 比如 {@link org.apache.dubbo.rpc.Protocol}
+         */
         if (!withExtensionAnnotation(type)) {
             throw new IllegalArgumentException("Extension type (" + type +
                 ") is not an extension, because it is NOT annotated with @" + SPI.class.getSimpleName() + "!");
@@ -101,7 +104,7 @@ public class ExtensionDirector implements ExtensionAccessor {
              * 这边可以用, rpc的这个协议来辅助看
              * frameworkModel.getExtensionLoader(Protocol.class);
              *
-             * 这个
+             * 这个 {@link org.apache.dubbo.rpc.Protocol}
              * @SPI(value = "dubbo", scope = ExtensionScope.FRAMEWORK)
              * public interface Protocol
              */
@@ -130,8 +133,10 @@ public class ExtensionDirector implements ExtensionAccessor {
 
         // 3. create it
         if (loader == null) {
-            // 创建这个类型扩展点
-            // type 类似 org.apache.dubbo.rpc.Protocol
+            /**
+             * 创建这个类型扩展点
+             *  type 类似 {@link org.apache.dubbo.rpc.Protocol}
+             */
             loader = createExtensionLoader(type);
         }
 
@@ -153,7 +158,10 @@ public class ExtensionDirector implements ExtensionAccessor {
     private <T> ExtensionLoader<T> createExtensionLoader0(Class<T> type) {
         checkDestroyed();
         ExtensionLoader<T> loader;
-        // 创建出扩展点加载器 直接new出来放到缓存里面
+        /**
+         * 创建出扩展点加载器 直接new出来放到缓存里面
+         * ExtensionLoader 往下
+         */
         extensionLoadersMap.putIfAbsent(type, new ExtensionLoader<T>(type, this, scopeModel));
         loader = (ExtensionLoader<T>) extensionLoadersMap.get(type);
         return loader;

@@ -51,7 +51,12 @@ public class RandomLoadBalance extends AbstractLoadBalance {
      * @param <T>
      * @return The selected invoker
      */
-    // 权重随机策略，最常见的负载均衡策略，根据上面提到的计算权重，在 invoker 集群间进行随机调用，但是由于随机的概率学特性，在 qps 较少的情况下，有可能出现流量倾斜
+    /**
+     * 权重随机策略，最常见的负载均衡策略，根据上面提到的计算权重，在 invoker 集群间进行随机调用，但是由于随机的概率学特性，在 qps 较少的情况下，有可能出现流量倾斜
+     * 在经过多次请求后，能够将调用请求按照权重值进行“均匀”分配。
+     * 当然 RandomLoadBalance 也存在一定的缺点，当调用次数比较少时，Random 产生的随机数可能会比较集中，此时多数请求会落到同一台服务器上。
+     * 这个缺点并不是很严重，多数情况下可以忽略
+     */
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         // Number of invokers
@@ -68,8 +73,12 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         // the maxWeight of every invoker, the minWeight = 0 or the maxWeight of the last invoker
         // 存下每个invoker配置的权重
         int[] weights = new int[length];
-        // The sum of weights
-        // 配置的权重总和
+        // The sum of weights 配置的权重总和
+
+        /**
+         * 下面这个循环有两个作用，第一是计算总权重 totalWeight，
+         * 第二是检测每个服务提供者的权重是否相同
+         */
         int totalWeight = 0;
         for (int i = 0; i < length; i++) {
             // AbstractLoadBalance中获取invoker权重的逻辑

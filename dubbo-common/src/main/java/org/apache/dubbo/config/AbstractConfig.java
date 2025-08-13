@@ -468,9 +468,9 @@ public abstract class AbstractConfig implements Serializable {
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         /**
          * 子类可以看
-         * 1. ServiceConfig
-         * 2. ServiceConfigBase
-         * 3. AbstractInterfaceConfig
+         * 1. ServiceConfig {@link org.apache.dubbo.config.ServiceConfig#postProcessAfterScopeModelChanged(ScopeModel, ScopeModel)}
+         * 2. ServiceConfigBase {@link ServiceConfigBase#postProcessAfterScopeModelChanged(ScopeModel, ScopeModel)}
+         * 3. AbstractInterfaceConfig  {@link AbstractInterfaceConfig#postProcessAfterScopeModelChanged(ScopeModel, ScopeModel)}
          */
 
         // remove this config from old ConfigManager

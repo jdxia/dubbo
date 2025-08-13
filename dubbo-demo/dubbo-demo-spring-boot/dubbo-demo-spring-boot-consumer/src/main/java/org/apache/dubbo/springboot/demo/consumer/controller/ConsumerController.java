@@ -20,6 +20,7 @@ public class ConsumerController {
     private static final Logger log = LoggerFactory.getLogger(ConsumerController.class);
 
 //    @DubboReference(async = true)
+//    @DubboReference(async = true, sent = false)
     @DubboReference()
     private AsyncDemoService asyncDemoService;
 

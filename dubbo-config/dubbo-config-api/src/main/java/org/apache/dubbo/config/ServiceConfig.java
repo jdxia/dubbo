@@ -166,7 +166,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     public ServiceConfig() {
         /**
-         * 在每个构造器的第一行都会有个 super 方法来调用 父类的构造器，
+         * 在每个构造器的第一行都会有个 super 方法来调用 父类的构造器，{@link ServiceConfigBase#ServiceConfigBase()}
          * 当前这个 super 方法我们可以不写但是 Java 编译器底层还是会为 我们默认加上这么一行 super()代码来调用父类构造器的
          *
          * 最终往上 会调用到 {@link org.apache.dubbo.config.AbstractMethodConfig#AbstractMethodConfig()}

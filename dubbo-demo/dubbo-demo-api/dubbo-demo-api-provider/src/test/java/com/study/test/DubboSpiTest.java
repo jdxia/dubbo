@@ -12,6 +12,7 @@ public class DubboSpiTest {
     public static void main(String[] args) {
         FrameworkModel frameworkModel = FrameworkModel.defaultModel();
 
+        // 扩展点加载器
         ExtensionLoader<Protocol> extensionLoader = frameworkModel.getExtensionLoader(Protocol.class);
 
         // 自适应实例

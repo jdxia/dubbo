@@ -87,7 +87,16 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         return null;
     }
 
-    // 加权轮询策略，可以看做是对随机策略进行的优化，避免了流量倾斜的问题
+    /**
+     * 加权轮询策略，可以看做是对随机策略进行的优化，避免了流量倾斜的问题
+     *
+     * 所谓轮询是指将请求轮流分配给每台服务器。举个例子，我们有三台服务器 A、B、C。
+     * 我们将第一个请求分配给服务器 A，第二个请求分配给服务器 B，第三个请求分配给服务器 C，第四个请求再次分配给服务器 A。这个过程就叫做轮询。
+     * 轮询是一种无状态负载均衡算法，实现简单，适用于每台服务器性能相近的场景下。但现实情况下，我们并不能保证每台服务器性能均相近。
+     * 如果我们将等量的请求分配给性能较差的服务器，这显然是不合理的。因此，这个时候我们需要对轮询过程进行加权，以调控每台服务器的负载。
+     * 经过加权后，每台服务器能够得到的请求数比例，接近或等于他们的权重比。比如服务器 A、B、C 权重比为 5:2:1。
+     * 那么在8次请求中，服务器 A 将收到其中的5次请求，服务器 B 会收到其中的2次请求，服务器 C 则收到其中的1次请求
+     */
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();

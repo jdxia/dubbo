@@ -65,6 +65,9 @@ public class ProviderApp {
         // 设置超时
         demoServiceServiceConfig.setTimeout(5000);
 
+        // 设置线程池
+        demoServiceServiceConfig.setExecutes(null);
+
         // ======================================================================================================
 
         // 一个 ServiceConfig 实例代表一个 RPC 服务
