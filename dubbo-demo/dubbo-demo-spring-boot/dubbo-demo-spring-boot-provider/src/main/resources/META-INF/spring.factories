@@ -1,2 +1,0 @@
-org.springframework.context.ApplicationContextInitializer=\
-org.apache.dubbo.springboot.demo.provider.config.DubboAppInitializer
