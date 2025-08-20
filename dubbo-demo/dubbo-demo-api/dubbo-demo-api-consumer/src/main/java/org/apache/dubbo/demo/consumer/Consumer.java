@@ -81,7 +81,11 @@ public class Consumer {
         referenceConfigList.add(demoServiceReferenceConfig);
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-        bootstrap.application(new ApplicationConfig("dubbo-demo-api-consumer"))
+        ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-api-consumer");
+        applicationConfig.setQosEnable(false);
+        applicationConfig.setRegisterConsumer(false);
+
+        bootstrap.application(applicationConfig)
             .registry(new RegistryConfig(REGISTRY_URL))
             .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
             .references(referenceConfigList)
