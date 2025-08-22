@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.springboot.demo.provider;
+package org.apache.dubbo.springboot.demo.provider.serive;
 
 
 import org.apache.dubbo.config.annotation.DubboService;

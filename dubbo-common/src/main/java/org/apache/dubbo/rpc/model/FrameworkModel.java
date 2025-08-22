@@ -127,7 +127,7 @@ public class FrameworkModel extends ScopeModel {
                 ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
                 // 获取 ScopeModelInitializer 类型支持的扩展集合，这里当前版本存在好几个扩展类型实现
                 Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
-                // 遍历这些扩展实现调用他们的 initializeFrameworkModel 方法类传递 FrameworkModel 对象
+                // 遍历这些扩展实现调用他们的 initializeFrameworkModel 方法类传递 FrameworkModel 对象, 10个
                 for (ScopeModelInitializer initializer : initializers) {
                     initializer.initializeFrameworkModel(this);
                 }
