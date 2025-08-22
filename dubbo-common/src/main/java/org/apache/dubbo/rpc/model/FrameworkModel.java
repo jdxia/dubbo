@@ -127,12 +127,12 @@ public class FrameworkModel extends ScopeModel {
                 ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
                 // 获取 ScopeModelInitializer 类型支持的扩展集合，这里当前版本存在好几个扩展类型实现
                 Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
-                // 遍历这些扩展实现调用他们的 initializeFrameworkModel 方法类传递 FrameworkModel 对象, 10个
+                // 遍历这些扩展实现调用他们的 initializeFrameworkModel 方法类传递 FrameworkModel 对象
                 for (ScopeModelInitializer initializer : initializers) {
                     initializer.initializeFrameworkModel(this);
                 }
 
-                // 创建一个内部的 ApplicationModel 类型
+                // 创建一个内部的 ApplicationModel 类型, 注意这是内部的
                 internalApplicationModel = new ApplicationModel(this, true);
                 // 创建 ApplicationConfig 类型对象同时传递应用程序模型对象 internalApplicationModel
                 // 获取 ConfigManager 类型对象，然后设置添加当前应用配置对象
@@ -275,6 +275,7 @@ public class FrameworkModel extends ScopeModel {
             if ((appModel = this.defaultAppModel) == null) {
                 synchronized (instLock) {
                     if (this.defaultAppModel == null) {
+                        // 创建一个非内部模型的 AppModel
                         this.defaultAppModel = newApplication();
                     }
                     appModel = this.defaultAppModel;
@@ -296,7 +297,7 @@ public class FrameworkModel extends ScopeModel {
         synchronized (instLock) {
             //如果还未添加过当前参数传递应用模型
             if (!this.applicationModels.contains(applicationModel)) {
-                //为当前应用模型生成内部id
+                //为当前应用模型生成内部id, 内部是0, 默认是1
                 applicationModel.setInternalId(buildInternalId(getInternalId(), appIndex.getAndIncrement()));
                 //添加到成员变量集合applicationModels中
                 this.applicationModels.add(applicationModel);

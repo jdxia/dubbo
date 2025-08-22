@@ -21,6 +21,7 @@ import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.demo.UserService;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.File;
 import java.util.ArrayList;

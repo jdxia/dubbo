@@ -5,15 +5,12 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
-
 import java.io.File;
-import java.util.concurrent.CountDownLatch;
 
 @SpringBootApplication
 @EnableDubbo(scanBasePackages = {"org.apache.dubbo.springboot.demo.provider"})
 public class ProviderApplication {
     public static void main(String[] args) throws Exception {
-
         cleanProxy();
 
         SpringApplication application = new SpringApplication(ProviderApplication.class);

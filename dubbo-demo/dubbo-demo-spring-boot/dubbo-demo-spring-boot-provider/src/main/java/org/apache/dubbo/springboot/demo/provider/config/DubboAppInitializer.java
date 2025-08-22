@@ -22,7 +22,7 @@ public class DubboAppInitializer implements ApplicationContextInitializer<Config
 
         MutablePropertySources propertySources = environment.getPropertySources();
 
-        Map<String, Object> myDubboWarmUpEnvironment = new HashMap<>(2, 1);
+        Map<String, Object> myDubboWarmUpEnvironment = new HashMap<>(1, 1);
 //        myDubboWarmUpEnvironment.put("dubbo.provider.delay", -1);
 //        myDubboWarmUpEnvironment.put("dubbo.application.manual-register", true);
 
