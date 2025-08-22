@@ -26,7 +26,7 @@ dubbo:
 #    environment: dev
     logger: slf4j
     #provider注册模式，可选值 interface(接口级)、instance(应用级)、all，默认是all(双注册)
-    register-mode: all
+    register-mode: instance
     metadata-service-port: -1
     #consumer服务发现模式
     service-discovery:
@@ -71,22 +71,12 @@ dubbo:
     # 如果此时因网络故障等原因导致读取可用地址列表失败，框架会查询本地缓存的注册中心地址并返回（如不想使用使用缓存地址，可通过设置 check=true 快速失败抛出异常）
     file-cache: false
     address: ${zk.address}
-#    address: ${nacos.address}
-#    username: develop
-#    password: develop2024.
-
-#    address: nacos://localhost:8848?backup=localshot:8846,localshot:8847
-#
-#  不想使用 nacos 作为配置中心，可以通过以下两个参数来调整或控制默认行为
-#    use-as-config-center: false
-#    use-as-metadata-report: false
+    use-as-config-center: true
+    use-as-metadata-center: true
   config-center:
     address: ${zk.address}
   metadata-report:
     address: ${zk.address}
-  provider:
-    # 延迟1s注册
-    delay: 1000
   consumer:
     timeout: 5000 # 配置客户端超时, 默认1s
     check: false

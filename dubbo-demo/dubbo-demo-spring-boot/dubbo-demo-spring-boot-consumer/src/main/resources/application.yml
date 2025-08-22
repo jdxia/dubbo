@@ -43,7 +43,7 @@ dubbo:
       enable: false
       directory: /tmp
     qos-enable: true
-    qos-port: 22222
+    qos-port: 22223
     qos-accept-foreign-ip: true
     qos-accept-foreign-ip-whitelist: 10.0.0.0/8,192.168.0.0/16,172.16.0.0/12
   protocol:

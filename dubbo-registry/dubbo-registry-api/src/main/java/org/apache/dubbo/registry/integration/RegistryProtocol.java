@@ -290,8 +290,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         // decide if we need to delay publish (provider itself and registry should both need to register)
         boolean register = providerUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
         if (register) {
-            // 服务提供者开始注册节点, 这个节点现在是与具体谁当注册中心无关
-            // 重点
+            /**
+             * 服务提供者开始注册节点, 这个节点现在是与具体谁当注册中心无关
+             * 重点
+             */
             register(registry, registeredProviderUrl);
         }
 

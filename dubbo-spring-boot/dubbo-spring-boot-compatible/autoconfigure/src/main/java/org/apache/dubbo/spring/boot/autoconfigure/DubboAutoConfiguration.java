@@ -49,6 +49,7 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_SCAN_PREFIX;
 @ConditionalOnProperty(prefix = DUBBO_PREFIX, name = "enabled", matchIfMissing = true)
 @Configuration
 @AutoConfigureAfter(DubboRelaxedBindingAutoConfiguration.class)
+// dubbo配置文件
 @EnableConfigurationProperties(DubboConfigurationProperties.class)
 @EnableDubboConfig
 public class DubboAutoConfiguration {

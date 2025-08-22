@@ -26,6 +26,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.context.AbstractConfigManager;
 import org.apache.dubbo.config.context.ConfigManager;
 
 import java.util.Collection;
@@ -163,7 +164,7 @@ public class ApplicationModel extends ScopeModel {
                 extensionLoader.getExtension(listenerName).init();
             }
 
-            //初始化扩展(这个是应用程序生命周期的方法调用，这里调用初始化方法
+            // 初始化应用程序扩展方法: 这个是应用程序生命周期的方法调用，这里调用初始化方法
             initApplicationExts();
 
             //获取域模型初始化器扩展对象列表，然后执行初始化方法
@@ -181,9 +182,13 @@ public class ApplicationModel extends ScopeModel {
 
     // already synchronized in constructor
     private void initApplicationExts() {
-        //这个扩展实现一共有两个可以看那个扩展类型为ConfigManager和Environment
+        //这个扩展实现一共有两个可以看那个扩展类型为 ConfigManager 和 Environment
         Set<ApplicationExt> exts = this.getExtensionLoader(ApplicationExt.class).getSupportedExtensionInstances();
         for (ApplicationExt ext : exts) {
+            /**
+             * ConfigManager {@link AbstractConfigManager#initialize()}
+             * Environment {@link Environment#initialize()}
+             */
             ext.initialize();
         }
     }
