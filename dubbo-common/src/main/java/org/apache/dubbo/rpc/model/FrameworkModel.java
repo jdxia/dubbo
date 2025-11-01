@@ -257,6 +257,7 @@ public class FrameworkModel extends ScopeModel {
 
     public ApplicationModel newApplication() {
         synchronized (instLock) {
+            // 创建一个非内部模型的 ApplicationModel
             return new ApplicationModel(this);
         }
     }
@@ -275,7 +276,7 @@ public class FrameworkModel extends ScopeModel {
             if ((appModel = this.defaultAppModel) == null) {
                 synchronized (instLock) {
                     if (this.defaultAppModel == null) {
-                        // 创建一个非内部模型的 AppModel
+                        // 创建一个非内部模型的 ApplicationModel
                         this.defaultAppModel = newApplication();
                     }
                     appModel = this.defaultAppModel;

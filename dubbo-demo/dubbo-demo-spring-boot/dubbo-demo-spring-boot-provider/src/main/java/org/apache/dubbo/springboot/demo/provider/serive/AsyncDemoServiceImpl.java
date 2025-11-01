@@ -93,6 +93,11 @@ public class AsyncDemoServiceImpl implements AsyncDemoService {
         RpcContext.getServerContext().setAttachment("result", "provider: " + index);
 
         String resultStr = "===> async provider, name: " + name;
+        /**
+         * 如果不传入线程池，默认使用ForkJoinPool的commonPool，其线程数量默认是CPU的核心数量-1，推荐传入自定义的业务线程池
+         *
+         * CompletableFuture.supplyAsync(() -> predictQuestionNew(request), dubboAsyncBizExecutor)
+         */
         return CompletableFuture.supplyAsync(() -> {
 
             try {

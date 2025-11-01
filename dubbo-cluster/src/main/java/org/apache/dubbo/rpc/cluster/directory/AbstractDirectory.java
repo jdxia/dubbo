@@ -413,6 +413,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected final void refreshRouter(BitList<Invoker<T>> newlyInvokers, Runnable switchAction) {
         try {
+            // 这里会传入回调,在合适的时机执行
             routerChain.setInvokers(newlyInvokers.clone(), switchAction);
         } catch (Throwable t) {
             logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain. " +

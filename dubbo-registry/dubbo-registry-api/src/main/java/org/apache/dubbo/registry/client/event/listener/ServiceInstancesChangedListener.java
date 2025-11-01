@@ -32,6 +32,7 @@ import org.apache.dubbo.metrics.registry.event.RegistryEvent;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
@@ -120,6 +121,8 @@ public class ServiceInstancesChangedListener {
     }
 
     /**
+     * 同步方法,处理实例变更事件
+     *
      * @param event
      */
     private synchronized void doOnEvent(ServiceInstancesChangedEvent event) {
@@ -127,6 +130,7 @@ public class ServiceInstancesChangedListener {
             return;
         }
 
+        // 刷新实例, 更新 allInstances
         refreshInstance(event);
 
         if (logger.isDebugEnabled()) {
@@ -153,10 +157,12 @@ public class ServiceInstancesChangedListener {
         }
 
         // get MetadataInfo with revision
+        // 获取元数据信息
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
             String revision = entry.getKey();
             List<ServiceInstance> subInstances = entry.getValue();
 
+            // 从本地或远程获取元数据
             MetadataInfo metadata = subInstances.stream()
                 .map(ServiceInstance::getServiceMetadata)
                 .filter(Objects::nonNull)
@@ -164,6 +170,7 @@ public class ServiceInstancesChangedListener {
                 .findFirst()
                 .orElseGet(() -> serviceDiscovery.getRemoteMetadata(revision, subInstances));
 
+            // 解析元数据
             parseMetadata(revision, metadata, localServiceToRevisions);
             // update metadata into each instance, in case new instance created.
             for (ServiceInstance tmpInstance : subInstances) {
@@ -174,15 +181,20 @@ public class ServiceInstancesChangedListener {
             }
         }
 
+        // 如果有空元数据,提交重试任务
         int emptyNum = hasEmptyMetadata(revisionToInstances);
         if (emptyNum != 0) {// retry every 10 seconds
             hasEmptyMetadata = true;
+            //尝试获取重试许可(Semaphore)
             if (retryPermission.tryAcquire()) {
+                // 取消之前的重试任务
                 if (retryFuture != null && !retryFuture.isDone()) {
                     // cancel last retryFuture because only one retryFuture will be canceled at destroy().
+                    // 可能被中断
                     retryFuture.cancel(true);
                 }
                 try {
+                    // 提交新的重试任务(10秒后执行)
                     retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
                 } catch (Exception e) {
                     logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Error submitting async retry task.");
@@ -191,6 +203,7 @@ public class ServiceInstancesChangedListener {
             }
 
             // return if all metadata is empty, this notification will not take effect.
+            // 如果所有元数据都为空,直接返回,不通知!
             if (emptyNum == revisionToInstances.size()) {
                 // 1-17 - Address refresh failed.
                 logger.error(REGISTRY_FAILED_REFRESH_ADDRESS, "metadata Server failure", "",
@@ -219,7 +232,10 @@ public class ServiceInstancesChangedListener {
             list.add(new ProtocolServiceKeyWithUrls(serviceInfo.getProtocolServiceKey(), (List<URL>) urls));
         }
 
+        // 更新服务URL映射
         this.serviceUrls = newServiceUrls;
+
+        // 通知地址变更
         this.notifyAddressChanged();
     }
 
@@ -409,13 +425,21 @@ public class ServiceInstancesChangedListener {
             () -> {
                 Map<String, Integer> lastNumMap = new HashMap<>();
                 // 1 different services
+                // 遍历所有监听器
                 listeners.forEach((serviceKey, listenerSet) -> {
                     // 2 multiple subscription listener of the same service
                     for (NotifyListenerWithKey listenerWithKey : listenerSet) {
                         NotifyListener notifyListener = listenerWithKey.getNotifyListener();
 
-                        List<URL> urls = toUrlsWithEmpty(getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
+                        List<URL> urls = toUrlsWithEmpty(
+                            // 获取该服务的所有 URL
+                            getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
                         logger.info("Notify service " + listenerWithKey.getProtocolServiceKey() + " with urls " + urls.size());
+
+                        /**
+                         *  通知监听器 (这里会触发 Directory 的 notify)
+                         * {@link ServiceDiscoveryRegistryDirectory#notify(List)}
+                         */
                         notifyListener.notify(urls);
                         lastNumMap.put(serviceKey, urls.size());
                     }

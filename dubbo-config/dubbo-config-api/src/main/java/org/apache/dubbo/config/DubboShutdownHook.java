@@ -100,6 +100,10 @@ public class DubboShutdownHook extends Thread {
                 break;
             }
         }
+
+        /**
+         * 很重要
+         */
         if (hasModuleBindSpring) {
             int timeout = ConfigurationUtils.getServerShutdownTimeout(applicationModel);
             if (timeout > 0) {
@@ -134,6 +138,7 @@ public class DubboShutdownHook extends Thread {
                 }
             }
         }
+        // 这时候spring的bean可能还没销毁
         if (!applicationModel.isDestroyed()) {
             logger.info("Dubbo shutdown hooks execute now. " + applicationModel.getDesc());
             applicationModel.destroy();

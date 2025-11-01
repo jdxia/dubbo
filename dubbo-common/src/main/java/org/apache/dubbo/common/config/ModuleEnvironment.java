@@ -60,6 +60,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
     @Override
     public void initialize() throws IllegalStateException {
         if (initialized.compareAndSet(false, true)) {
+            // OrderedPropertiesConfiguration 创建
             this.orderedPropertiesConfiguration = new OrderedPropertiesConfiguration(moduleModel);
         }
     }

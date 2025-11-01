@@ -32,6 +32,7 @@ public class OrderedPropertiesConfiguration implements Configuration {
 
     public OrderedPropertiesConfiguration(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
+        // 往下
         refresh();
     }
 

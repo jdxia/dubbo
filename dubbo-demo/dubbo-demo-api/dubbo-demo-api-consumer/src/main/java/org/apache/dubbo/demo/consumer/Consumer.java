@@ -18,10 +18,7 @@ package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.rpc.RpcContext;
@@ -29,6 +26,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -77,6 +75,19 @@ public class Consumer {
         demoServiceReferenceConfig.setGroup("demo");
         demoServiceReferenceConfig.setVersion("1.0.0");
 
+        NotifyCallback notify = new NotifyCallback();
+        MethodConfig sayHelloMethod = new MethodConfig();
+        sayHelloMethod.setName("sayHello");
+
+        // 绑定调用前后/异常的回调“对象 + 方法名”
+        sayHelloMethod.setOninvoke(notify);
+        sayHelloMethod.setOninvokeMethod("onInvoke");
+        sayHelloMethod.setOnreturn(notify);
+        sayHelloMethod.setOnreturnMethod("onReturn");
+        sayHelloMethod.setOnthrow(notify);
+        sayHelloMethod.setOnthrowMethod("onThrow");
+
+        demoServiceReferenceConfig.setMethods(Collections.singletonList(sayHelloMethod));
 
         referenceConfigList.add(demoServiceReferenceConfig);
 
@@ -116,10 +127,11 @@ public class Consumer {
 
 
         // generic invoke
-        GenericService genericService = (GenericService) demoService;
-        Object genericInvokeResult = genericService.$invoke("sayHello", new String[]{String.class.getName()},
-            new Object[]{"dubbo generic invoke"});
-        System.out.println(genericInvokeResult.toString());
+//        GenericService genericService = (GenericService) demoService;
+//        Object genericInvokeResult = genericService.$invoke("sayHello", new String[]{String.class.getName()},
+//            new Object[]{"dubbo generic invoke"});
+//        System.out.println(genericInvokeResult.toString());
+        
     }
 
     private static void cleanProxy() {

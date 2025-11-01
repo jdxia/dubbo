@@ -167,6 +167,7 @@ public class RouterChain<T> {
         //         this can prevent use newly invokers to route backup chain, which can only route origin invokers now.
         notifyingInvokers.set(invokers);
 
+        // 执行回调,切换 Directory 的 Invokers
         // Switch the invokers reference in directory.
         // Cannot switch before update main chain or after backup chain update success. Or that will cause state inconsistent.
         switchAction.run();

@@ -158,7 +158,7 @@ public class ApplicationModel extends ScopeModel {
 
             //获取应用程序初始化监听器 ApplicationInitListener 扩展
             ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
-            //如果存在应用程序初始化监听器扩展则执行这个初始化方法，在当前的版本还未看到有具体的扩展实现类型
+            //如果存在应用程序初始化监听器扩展则执行这个初始化方法，在当前的版本还未看到有具体扩展实现类型
             Set<String> listenerNames = extensionLoader.getSupportedExtensions();
             for (String listenerName : listenerNames) {
                 extensionLoader.getExtension(listenerName).init();

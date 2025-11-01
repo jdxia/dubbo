@@ -56,6 +56,8 @@ public class ModuleServiceRepository {
 
     public ModuleServiceRepository(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
+
+        // ModuleServiceRepository存储库中使用框架存储库frameworkServiceRepository来间接存储
         frameworkServiceRepository = ScopeModelUtil.getFrameworkModel(moduleModel).getServiceRepository();
     }
 

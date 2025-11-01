@@ -88,6 +88,7 @@ public class ModuleModel extends ScopeModel {
             initialize();
 
             //创建模块服务存储库对象
+            // ModuleServiceRepository是模块模型中用来存储服务的
             this.serviceRepository = new ModuleServiceRepository(this);
 
             //初始化模块配置扩展
@@ -114,7 +115,10 @@ public class ModuleModel extends ScopeModel {
 
     // already synchronized in constructor
     private void initModuleExt() {
-        //目前这里的扩展只支持有一个类型ModuleEnvironment
+        /**
+         * {@link ModuleEnvironment}
+         * {@link ModuleConfigManager}
+         */
         Set<ModuleExt> exts = this.getExtensionLoader(ModuleExt.class).getSupportedExtensionInstances();
         for (ModuleExt ext : exts) {
             ext.initialize();

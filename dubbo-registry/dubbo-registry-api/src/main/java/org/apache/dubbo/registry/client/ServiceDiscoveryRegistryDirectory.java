@@ -163,14 +163,17 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         this.setRouterChain(RouterChain.buildChain(getInterface(), url.addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)));
     }
 
+    // 同步方法,接收地址通知
     @Override
     public synchronized void notify(List<URL> instanceUrls) {
         if (isDestroyed()) {
             return;
         }
         // Set the context of the address notification thread.
+        // 设置上下文
         RpcServiceContext.getServiceContext().setConsumerUrl(getConsumerUrl());
 
+        // 执行地址监听器扩展
         //  3.x added for extend URL address
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
@@ -180,14 +183,19 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             }
         }
 
+        // 刷新配置和 Invoker
         refreshOverrideAndInvoker(instanceUrls);
     }
 
     // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
+    // 同步刷新
     @Override
     protected synchronized void refreshOverrideAndInvoker(List<URL> instanceUrls) {
+        // 应用配置覆盖
         // mock zookeeper://xxx?mock=return null
         this.directoryUrl = overrideDirectoryWithConfigurator(getOriginalConsumerUrl());
+
+        // 刷新 Invoker
         refreshInvoker(instanceUrls);
     }
 
@@ -278,10 +286,14 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             || serviceListener.getAllInstances().size() == serviceListener.getServiceNames().size();
     }
 
+    // 刷新 Invoker
     private void refreshInvoker(List<URL> invokerUrls) {
         Assert.notNull(invokerUrls, "invokerUrls should not be null, use EMPTY url to clear current addresses.");
+
+        // 保存原始 URL
         this.originalUrls = invokerUrls;
 
+        // 处理空协议(清空所有地址)
         if (invokerUrls.size() == 1 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             logger.warn(PROTOCOL_UNSUPPORTED, "", "", "Received url with EMPTY protocol, will clear all available addresses.");
             refreshRouter(BitList.emptyList(), () ->
@@ -289,12 +301,16 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             );
             destroyAllInvokers(); // Close all invokers
         } else {
+            // 允许访问
             this.forbidden = false; // Allow accessing
+
+            // 处理空 URL 列表
             if (CollectionUtils.isEmpty(invokerUrls)) {
                 logger.warn(PROTOCOL_UNSUPPORTED, "", "", "Received empty url list, will ignore for protection purpose.");
                 return;
             }
 
+            // 构建新的 Invoker 映射
             // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at destroyAllInvokers().
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
             // can't use local reference as oldUrlInvokerMap's mappings might be removed directly at toInvokers().
@@ -304,6 +320,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
                 localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
+
+            // 创建新的 invokers 并更新
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
             logger.info("Refreshed invoker size " + newUrlInvokerMap.size());
 
@@ -314,9 +332,13 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
             BitList<Invoker<T>> finalInvokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
             // pre-route and build cache
+            // 关键调用,更新路由链和 Directory 的 invokers
             refreshRouter(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
+
+            // 更新 URL-Invoker 映射
             this.urlInvokerMap = newUrlInvokerMap;
 
+            // 销毁不再使用的 Invoker
             if (oldUrlInvokerMap != null) {
                 try {
                     destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
@@ -326,6 +348,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             }
         }
 
+        // 通知 Invoker 已刷新
         // notify invokers refreshed
         this.invokersChanged();
 
